@@ -113,12 +113,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             id           : Int(json["id"].string!)!,
             invoiceSerial: json["num_cita"].string!,
             success      : json["encontro"].bool!,
-            discount     : 0.0,
             comment      : json["comentario"].string!
         )
         
         
-        // parsear los items en la factura
+        // parsear los ITEMS en la factura
         let items:Array<Item> = json["items"].arrayValue.map {
             Item(
                 id         : $0["item"]["id"].int!,
@@ -131,7 +130,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         invoice.items = items
         
         
-        // parsear los items en la factura
+        // parsear los PAGOS en la factura
         let payments: Array<Payment> = json["pagos"].arrayValue.map {
             Payment(
                 id    : $0["pago"]["tipo"].int!,
@@ -155,8 +154,30 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             ruc: json["cliente"]["ruc"].string!,
             name: json["cliente"]["nombres"].string!,
             lastName: json["cliente"]["apellidos"].string!,
-            dob: json["cliente"]["fecha_nacimiento"].string!
+            dob: json["cliente"]["fecha_nacimiento"].string!,
+            phone: json["cliente"]["telefono1"].string!
         )
+        
+        // datos del DESCUENTO
+        invoice.discount = Discount(
+            id: Int(json["descuento"]["id"].string!)!,
+            description: json["descuento"]["descripcion"].string!,
+            value: Double(json["descuento"]["valor"].string!)!,
+            type: json["descuento"]["tipo"].string!
+        )
+        
+        
+        // datos del status
+        invoice.status = Status(
+            id: Int(json["status"]["id"].string!)!,
+            description: json["status"]["descripcion"].string!
+        )
+        
+        
+        
+        
+        
+        
         
         // imprimir los resultados
         if (invoice.success) {

@@ -5,7 +5,6 @@ class Invoice {
     
     var id: Int = 0
     var invoiceSerial: String = ""
-    var discount: Double = 0.0
     var comment: String = ""
     var success: Bool = false
     
@@ -54,11 +53,20 @@ class Invoice {
         }
     }
     
-    init(id: Int, invoiceSerial: String, success: Bool, discount: Double, comment: String) {
+    private var invoiceDiscount: Discount? = nil
+    var discount: Discount {
+        get {
+            return invoiceDiscount!
+        } set (v) {
+            invoiceDiscount = v
+        }
+    }
+    
+    
+    init(id: Int, invoiceSerial: String, success: Bool, comment: String) {
         self.id = id
         self.invoiceSerial = invoiceSerial
         self.success = success
-        self.discount = discount
         self.comment = comment
     }
     

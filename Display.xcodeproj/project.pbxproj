@@ -15,6 +15,7 @@
 		20B687D51F619DF70075FAC9 /* Payment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20B687D41F619DF70075FAC9 /* Payment.swift */; };
 		20B687D71F619E180075FAC9 /* Modifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20B687D61F619E180075FAC9 /* Modifier.swift */; };
 		20B687D91F619E3E0075FAC9 /* Status.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20B687D81F619E3E0075FAC9 /* Status.swift */; };
+		20C5E0C11F61F70800A281D3 /* Discount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C5E0C01F61F70800A281D3 /* Discount.swift */; };
 		20DD5C911F55B0510094DA65 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20DD5C901F55B0510094DA65 /* AppDelegate.swift */; };
 		20DD5C931F55B0510094DA65 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20DD5C921F55B0510094DA65 /* ViewController.swift */; };
 		20DD5C961F55B0510094DA65 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 20DD5C941F55B0510094DA65 /* Main.storyboard */; };
@@ -60,6 +61,7 @@
 		20B687D41F619DF70075FAC9 /* Payment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Payment.swift; sourceTree = "<group>"; };
 		20B687D61F619E180075FAC9 /* Modifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Modifier.swift; path = Models/Modifier.swift; sourceTree = "<group>"; };
 		20B687D81F619E3E0075FAC9 /* Status.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Status.swift; path = Models/Status.swift; sourceTree = "<group>"; };
+		20C5E0C01F61F70800A281D3 /* Discount.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Discount.swift; path = Models/Discount.swift; sourceTree = "<group>"; };
 		20DD5C8D1F55B0510094DA65 /* Display.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Display.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20DD5C901F55B0510094DA65 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		20DD5C921F55B0510094DA65 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -125,6 +127,7 @@
 				20B687D41F619DF70075FAC9 /* Payment.swift */,
 				20B687D61F619E180075FAC9 /* Modifier.swift */,
 				20B687D81F619E3E0075FAC9 /* Status.swift */,
+				20C5E0C01F61F70800A281D3 /* Discount.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -523,6 +526,7 @@
 				20B687D11F619DC90075FAC9 /* Customer.swift in Sources */,
 				20B687D71F619E180075FAC9 /* Modifier.swift in Sources */,
 				20DD5C911F55B0510094DA65 /* AppDelegate.swift in Sources */,
+				20C5E0C11F61F70800A281D3 /* Discount.swift in Sources */,
 				20B687D31F619DD70075FAC9 /* Employee.swift in Sources */,
 				201E56DF1F609CFF005C2914 /* Item.swift in Sources */,
 				201E56DA1F609425005C2914 /* CustomCell.swift in Sources */,

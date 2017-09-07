@@ -9,6 +9,7 @@ class Customer {
     var name: String = ""
     var lastName: String = ""
     var dob: String = ""
+    var phone: String = ""
     
     var fullName: String {
         get {
@@ -18,14 +19,13 @@ class Customer {
         }
     }
     
-    init(id: Int, ruc: String, name: String, lastName: String, dob: String) {
+    init(id: Int, ruc: String, name: String, lastName: String, dob: String, phone: String) {
         self.id = id
         self.ruc = ruc
         self.name = name
         self.lastName = lastName
         self.dob = dob
+        self.phone = phone
     }
-    
-    
     
 }
