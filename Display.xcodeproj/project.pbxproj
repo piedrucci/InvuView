@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		201E56DA1F609425005C2914 /* CustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201E56D91F609425005C2914 /* CustomCell.swift */; };
 		201E56DF1F609CFF005C2914 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201E56DE1F609CFF005C2914 /* Item.swift */; };
+		20A8D4161F632C33003F833B /* PaymentCustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20A8D4151F632C33003F833B /* PaymentCustomCell.swift */; };
+		20A8D4181F634BE3003F833B /* OrderListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20A8D4171F634BE3003F833B /* OrderListener.swift */; };
 		20B687CF1F619D7B0075FAC9 /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20B687CE1F619D7B0075FAC9 /* Invoice.swift */; };
 		20B687D11F619DC90075FAC9 /* Customer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20B687D01F619DC90075FAC9 /* Customer.swift */; };
 		20B687D31F619DD70075FAC9 /* Employee.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20B687D21F619DD70075FAC9 /* Employee.swift */; };
@@ -55,6 +57,8 @@
 		04AE4022E3DEA36F80859AF7 /* Pods-Display.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Display.release.xcconfig"; path = "Pods/Target Support Files/Pods-Display/Pods-Display.release.xcconfig"; sourceTree = "<group>"; };
 		201E56D91F609425005C2914 /* CustomCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CustomCell.swift; path = Controllers/CustomCell.swift; sourceTree = "<group>"; };
 		201E56DE1F609CFF005C2914 /* Item.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Item.swift; path = Models/Item.swift; sourceTree = "<group>"; };
+		20A8D4151F632C33003F833B /* PaymentCustomCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaymentCustomCell.swift; path = classes/PaymentCustomCell.swift; sourceTree = "<group>"; };
+		20A8D4171F634BE3003F833B /* OrderListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OrderListener.swift; path = classes/OrderListener.swift; sourceTree = "<group>"; };
 		20B687CE1F619D7B0075FAC9 /* Invoice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Invoice.swift; path = Models/Invoice.swift; sourceTree = "<group>"; };
 		20B687D01F619DC90075FAC9 /* Customer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Customer.swift; path = Models/Customer.swift; sourceTree = "<group>"; };
 		20B687D21F619DD70075FAC9 /* Employee.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Employee.swift; path = Models/Employee.swift; sourceTree = "<group>"; };
@@ -156,7 +160,7 @@
 			isa = PBXGroup;
 			children = (
 				201E56DB1F609CAF005C2914 /* Models */,
-				20F20F621F5F0282003147D4 /* classes */,
+				20F20F621F5F0282003147D4 /* Classes */,
 				20E901D51F5DEC5C00858D4A /* utils */,
 				20DD5C901F55B0510094DA65 /* AppDelegate.swift */,
 				20DD5C921F55B0510094DA65 /* ViewController.swift */,
@@ -164,7 +168,6 @@
 				20DD5C971F55B0510094DA65 /* Assets.xcassets */,
 				20DD5C991F55B0510094DA65 /* LaunchScreen.storyboard */,
 				20DD5C9C1F55B0510094DA65 /* Info.plist */,
-				201E56D91F609425005C2914 /* CustomCell.swift */,
 			);
 			path = Display;
 			sourceTree = "<group>";
@@ -177,9 +180,11 @@
 			name = utils;
 			sourceTree = "<group>";
 		};
-		20F20F621F5F0282003147D4 /* classes */ = {
+		20F20F621F5F0282003147D4 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				201E56D91F609425005C2914 /* CustomCell.swift */,
+				20A8D4151F632C33003F833B /* PaymentCustomCell.swift */,
 				20F20F631F5F02D4003147D4 /* ClassCustomer.swift */,
 				20F20F651F5F0DDB003147D4 /* SalesCheck.swift */,
 				20F20F671F5F13BF003147D4 /* ClassItem.swift */,
@@ -187,8 +192,9 @@
 				20F20F6D1F5F34B2003147D4 /* ClassPayment.swift */,
 				20F20F6F1F5F400E003147D4 /* PaymentType.swift */,
 				20F20F711F5F4F14003147D4 /* ClassStatus.swift */,
+				20A8D4171F634BE3003F833B /* OrderListener.swift */,
 			);
-			name = classes;
+			name = Classes;
 			sourceTree = "<group>";
 		};
 		4EC9062EB6F3537B2C3DD200 /* Pods */ = {
@@ -533,8 +539,10 @@
 				20F20F6C1F5F2E99003147D4 /* ClassItemDetail.swift in Sources */,
 				20F20F681F5F13BF003147D4 /* ClassItem.swift in Sources */,
 				20F20F6E1F5F34B2003147D4 /* ClassPayment.swift in Sources */,
+				20A8D4181F634BE3003F833B /* OrderListener.swift in Sources */,
 				20B687D91F619E3E0075FAC9 /* Status.swift in Sources */,
 				20F20F661F5F0DDB003147D4 /* SalesCheck.swift in Sources */,
+				20A8D4161F632C33003F833B /* PaymentCustomCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

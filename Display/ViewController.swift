@@ -9,12 +9,25 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     var activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView()
     
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var PaymentTableView: UITableView!
+    
     @IBOutlet weak var lblEmployee: UILabel!
     @IBOutlet weak var lblSerial: UILabel!
     @IBOutlet weak var lblComment: UILabel!
     @IBOutlet weak var lblCustomer: UILabel!
+    @IBOutlet weak var lblStrDiscount: UILabel!
+    
+    @IBOutlet weak var lblSubtotal: UILabel!
+    @IBOutlet weak var lblTax: UILabel!
+    @IBOutlet weak var lblTotal: UILabel!
+    @IBOutlet weak var lblPaid: UILabel!
+    @IBOutlet weak var lblDiscount: UILabel!
+    
     
     var data: Array<Item> = []
+    var paymentsData: Array<Payment> = []
+    
+    private var timer: Timer?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,7 +37,15 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
         view.addSubview(activityIndicator)
         
+        toggleVisible(sw: false)
+        
+        timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(handleMyFunction), userInfo: nil, repeats: true)
+        
         fetchData()
+    }
+    
+    func handleMyFunction() {
+        print("update info...")
     }
 
     override func didReceiveMemoryWarning() {
@@ -34,17 +55,38 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     func tableView(_ tableView:UITableView, numberOfRowsInSection section:Int) -> Int
     {
-        return data.count
+        var dataCount = 0
+        if (tableView == self.tableView) { dataCount = data.count }
+        if (tableView == self.PaymentTableView) { dataCount = paymentsData.count }
+        return dataCount
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
-        let customCell = tableView.dequeueReusableCell(withIdentifier: "Cell") as! CustomCell
-        let sd: Item = data[indexPath.row]
-        customCell.cellCant.text = String(sd.quantity)
-        customCell.cellDescripcion.text = sd.description
-        customCell.cellAmount.text = "$"+String(sd.price)
-        return customCell
+        var customUITableCell: UITableViewCell?
+        
+        if (tableView == self.tableView) {
+            let customCell = tableView.dequeueReusableCell(withIdentifier: "Cell") as! CustomCell
+            let item: Item = data[indexPath.row]
+            
+            customCell.cellCant.text = String(item.quantity)
+            customCell.cellDescripcion.text = item.description
+            customCell.cellAmount.text = "$"+String(item.price)
+            
+            if item.modifiers.count > 0 {
+                
+            }
+            customUITableCell = customCell
+            
+        } else if (tableView == self.PaymentTableView) {
+            let PaymentCell = tableView.dequeueReusableCell(withIdentifier: "PaymentCell") as! PaymentCustomCell
+            let payment: Payment = paymentsData[indexPath.row]
+            
+            PaymentCell.cellDescription.text = payment.name
+            PaymentCell.cellAmount.text = String(payment.amount)
+            customUITableCell = PaymentCell
+        }
+        return customUITableCell!
     }
     
     
@@ -54,21 +96,23 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 //        present(alertController, animated: true, completion: nil)
     }
     
+    func runTimedCode() {
+        print("ssss")
+    }
     
     func fetchData() {
+        //orderTimer.invalidate()
         toggleActivityIdicator(animate: true)
         
-        var url = api.endPoint + "citas/newOrdenCaja/id/4"
-        url = api.endPoint + "citas/view/id/67604"
+        let url = api.endPoint + "citas/newOrdenCaja/id/3"
+ //       let url = api.endPoint + "citas/view/id/68304"
         
         let headers: HTTPHeaders = ["APIKEY": api.apiKey]
-//        var salesCheck:SalesCheck? = nil
         
         
-//        Alamofire.request("https://jsonplaceholder.typicode.com/posts/1", method: .get).responseString().then
         Alamofire.request(url, headers: headers).responseData().then
             { json in
-                self.rr(json: json)
+                self.loadEntity(json: json)
             }.catch { error in
                 print(error)
             }
@@ -106,92 +150,161 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
         }
     
-    func rr(json: Data) {
+    func loadEntity(json: Data) {
         let json = JSON( data: json )
+//        print(json)
         
-        let invoice = Invoice(
-            id           : Int(json["id"].string!)!,
-            invoiceSerial: json["num_cita"].string!,
-            success      : json["encontro"].bool!,
-            comment      : json["comentario"].string!
-        )
-        
-        
-        // parsear los ITEMS en la factura
-        let items:Array<Item> = json["items"].arrayValue.map {
-            Item(
-                id         : $0["item"]["id"].int!,
-                price      : $0["item"]["precio"].double!,
-                description: $0["item"]["nombre"].string!,
-                tax        : $0["item"]["tax"].double!,
-                quant      : $0["cantidad"].int!
-            )
-        }
-        invoice.items = items
-        
-        
-        // parsear los PAGOS en la factura
-        let payments: Array<Payment> = json["pagos"].arrayValue.map {
-            Payment(
-                id    : $0["pago"]["tipo"].int!,
-                name  : $0["pago"]["nombre"].string!,
-                amount: $0["monto"].double!
-            )
-        }
-        invoice.payments = payments
-        
-        // datos del empleado
-        invoice.employee = Employee(
-            id: Int(json["empleado"]["id"].string!)!,
-            name: json["empleado"]["nombres"].string!,
-            lastName: json["empleado"]["apellidos"].string!
-        )
-        
-        
-        // datos del cliente
-        invoice.customer = Customer(
-            id: Int(json["cliente"]["id"].string!)!,
-            ruc: json["cliente"]["ruc"].string!,
-            name: json["cliente"]["nombres"].string!,
-            lastName: json["cliente"]["apellidos"].string!,
-            dob: json["cliente"]["fecha_nacimiento"].string!,
-            phone: json["cliente"]["telefono1"].string!
-        )
-        
-        // datos del DESCUENTO
-        invoice.discount = Discount(
-            id: Int(json["descuento"]["id"].string!)!,
-            description: json["descuento"]["descripcion"].string!,
-            value: Double(json["descuento"]["valor"].string!)!,
-            type: json["descuento"]["tipo"].string!
-        )
-        
-        
-        // datos del status
-        invoice.status = Status(
-            id: Int(json["status"]["id"].string!)!,
-            description: json["status"]["descripcion"].string!
-        )
-        
-        
-        
-        
-        
-        
-        
-        // imprimir los resultados
-        if (invoice.success) {
-            lblSerial.text = invoice.invoiceSerial
-            lblEmployee.text = invoice.employee.fullName
-            lblCustomer.text = invoice.customer.fullName
-
-            data = invoice.items
+        if (json["encontro"].bool!){
             
-            tableView.reloadData()
+            if json["status"]["descripcion"].string! == "Cerrada" {
+                toggleVisible(sw: true)
+                
+                let invoice = Invoice(
+                    id           : Int(json["id"].string!)!,
+                    invoiceSerial: json["num_cita"].string!,
+                    success      : json["encontro"].bool!,
+                    comment      : json["comentario"].string!
+                )
+                
+                // datos del status
+                invoice.status = Status(
+                    id: Int(json["status"]["id"].string!)!,
+                    description: json["status"]["descripcion"].string!
+                )
+                
+                
+                // parsear los ITEMS en la factura
+                let items:Array<Item> = json["items"].arrayValue.map {
+                    
+                    let arrayModifiers = $0["modificadores"].arrayValue
+                    let modifiers:Array<Modifier> = arrayModifiers.map{
+                        Modifier(
+                            id: $0["id"].intValue,
+                            quant: $0["cantidad"].intValue,
+                            price: $0["costo"].doubleValue,
+                            name: $0["nombre"].stringValue
+                        )
+                    }
+                    
+                    return Item(
+                        id         : $0["item"]["id"].int!,
+                        price      : $0["item"]["precio"].double!,
+                        description: $0["item"]["nombre"].string!,
+                        tax        : $0["item"]["tax"].double!,
+                        quant      : $0["cantidad"].int!,
+                        modifiers  : modifiers
+                    )
+                }
+                invoice.items = items
+                
+                
+                // parsear los PAGOS en la factura
+                let payments: Array<Payment> = json["pagos"].arrayValue.map {
+                    Payment(
+                        id    : $0["pago"]["tipo"].int!,
+                        name  : $0["pago"]["nombre"].string!,
+                        amount: Double($0["monto"].string!)!
+                    )
+                }
+                invoice.payments = payments
+                
+                // datos del empleado
+                invoice.employee = Employee(
+                    id: Int(json["empleado"]["id"].string!)!,
+                    name: json["empleado"]["nombres"].string!,
+                    lastName: json["empleado"]["apellidos"].string!
+                )
+                
+                
+                // datos del cliente
+                invoice.customer = Customer(
+                    id: Int(json["cliente"]["id"].string!)!,
+                    ruc: json["cliente"]["ruc"].string!,
+                    name: json["cliente"]["nombres"].string!,
+                    lastName: json["cliente"]["apellidos"].string!,
+                    dob: json["cliente"]["fecha_nacimiento"].string!,
+                    phone: (json["cliente"]["telefono1"].string! != "") ? json["cliente"]["telefono1"].string! : ""
+                )
+                
+                // datos del DESCUENTO
+                if (json["descuento"] != JSON.null) {
+                    invoice.discount = Discount(
+                        id: json["descuento"]["id"].int!,
+                        description: json["descuento"]["descripcion"].string!,
+                        value: Double(json["descuento"]["valor"].string!)!,
+                        type: json["descuento"]["tipo"].string!
+                    )
+                } else {
+                    invoice.discount = Discount(id: 0, description: "", value: 0.0, type: "")
+                }
+                
+                
+                
+                
+                
+                // imprimir los resultados
+                if (invoice.success) {
+                    lblSerial.text = invoice.invoiceSerial
+                    lblEmployee.text = invoice.employee.fullName
+                    lblCustomer.text = invoice.customer.fullName
+                    
+                    // calcular el subtotal ITEMS
+                    let subtotal = invoice.items.reduce(0.0, { acum, currentItem in
+                        acum + currentItem.amountItem
+                    })
+                    lblSubtotal.text = "$"+String(format: "%.02f", subtotal)
+                    
+                    // calcular el subtotal TAXS
+                    let taxes = invoice.items.reduce(0.0, { acum, currentItem in
+                        acum + currentItem.amountTax
+                    })
+                    lblTax.text = "$"+String(format: "%.02f", taxes)
+                    
+                    
+                    // calcular el total
+                    var total = subtotal + taxes
+                    
+                    
+                    // mostrar el total DESCUENTO
+                    var totalDiscount = 0.0
+                    if invoice.discount.value>0 {
+                        totalDiscount = (invoice.discount.value * total)/100
+                        total = total - totalDiscount
+                        lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
+                    }
+                    lblDiscount.text = "$"+String(format: "%.02f", totalDiscount)
+                    
+                    
+                    // mostrar el TOTAL
+                    lblTotal.text = "$"+String(format: "%.02f", total)
+                    
+                    // calcular el total en PAGOS
+                    let paid = invoice.payments.reduce(0.0, { acum, currentPayment in
+                        acum + currentPayment.amount
+                    })
+                    lblPaid.text = "$"+String(format: "%.02f", paid)
+                    
+                    
+                    data = invoice.items
+                    paymentsData = invoice.payments
+                    
+                    tableView.reloadData()
+                    PaymentTableView.reloadData()
+                
+                
+                }
             
-            toggleActivityIdicator(animate: false)
-//            print("esta ocupado: \(busy)")
+            
+            } else {
+                toggleVisible(sw: false)
+            }
+            
+        } else {
+            print(json["msg"].string!)
         }
+        
+        toggleActivityIdicator(animate: false)
+        
     }
     
     func toggleActivityIdicator(animate: Bool) {
@@ -200,6 +313,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }else if (!animate) {
             activityIndicator.stopAnimating()
         }
+    }
+    
+    func toggleVisible(sw: Bool){
+        tableView.isHidden = !sw
+        PaymentTableView.isHidden = !sw
     }
 
 }
