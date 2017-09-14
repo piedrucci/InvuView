@@ -2,6 +2,7 @@ import UIKit
 import Alamofire
 import PromiseKit
 import SwiftyJSON
+import AlamofireImage
 
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate{
 
@@ -24,6 +25,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     @IBOutlet weak var lblDiscount: UILabel!
     
     
+    @IBOutlet weak var logoImage: UIImageView!
+    
+    
     var data: Array<Item> = []
     var paymentsData: Array<Payment> = []
     
@@ -39,8 +43,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         toggleVisible(sw: false)
         
-        timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(handleMyFunction), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(handleMyFunction), userInfo: nil, repeats: false)
         
+        showImage()
         fetchData()
     }
     
@@ -96,16 +101,13 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 //        present(alertController, animated: true, completion: nil)
     }
     
-    func runTimedCode() {
-        print("ssss")
-    }
     
     func fetchData() {
         //orderTimer.invalidate()
         toggleActivityIdicator(animate: true)
         
-        let url = api.endPoint + "citas/newOrdenCaja/id/3"
- //       let url = api.endPoint + "citas/view/id/68304"
+        let url = api.endPoint + "citas/newOrdenCaja/id/2"
+//        let url = api.endPoint + "citas/view/id/68304"
         
         let headers: HTTPHeaders = ["APIKEY": api.apiKey]
         
@@ -216,15 +218,19 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 )
                 
                 
-                // datos del cliente
-                invoice.customer = Customer(
-                    id: Int(json["cliente"]["id"].string!)!,
-                    ruc: json["cliente"]["ruc"].string!,
-                    name: json["cliente"]["nombres"].string!,
-                    lastName: json["cliente"]["apellidos"].string!,
-                    dob: json["cliente"]["fecha_nacimiento"].string!,
-                    phone: (json["cliente"]["telefono1"].string! != "") ? json["cliente"]["telefono1"].string! : ""
-                )
+                // datos del cliente... si ID == 0 (no tiene cliente la factura)
+                let customerID = Int(String(describing: json["cliente"]["id"].object))
+                if ( customerID! != 0 ) {
+                    invoice.customer = Customer(
+                        id: Int(json["cliente"]["id"].string!)!,
+                        ruc: json["cliente"]["ruc"].string!,
+                        name: json["cliente"]["nombres"].string!,
+                        lastName: json["cliente"]["apellidos"].string!,
+                        dob: json["cliente"]["fecha_nacimiento"].string!,
+                        phone: ""
+                    )
+                }
+                
                 
                 // datos del DESCUENTO
                 if (json["descuento"] != JSON.null) {
@@ -234,10 +240,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         value: Double(json["descuento"]["valor"].string!)!,
                         type: json["descuento"]["tipo"].string!
                     )
-                } else {
-                    invoice.discount = Discount(id: 0, description: "", value: 0.0, type: "")
                 }
-                
                 
                 
                 
@@ -291,6 +294,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     tableView.reloadData()
                     PaymentTableView.reloadData()
                 
+                    
                 
                 }
             
@@ -307,6 +311,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
     }
     
+    // switch para mostrar-ocultar el ActivityIndicator
     func toggleActivityIdicator(animate: Bool) {
         if (animate) {
             activityIndicator.startAnimating()
@@ -315,10 +320,23 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
     }
     
+    // mostrar / ocultar los objetos en la pantalla
     func toggleVisible(sw: Bool){
         tableView.isHidden = !sw
         PaymentTableView.isHidden = !sw
     }
+    
+    func showImage() {
+//        Alamofire.request("http://i.imgur.com/w5rkSIj.jpg").responseImage { response in
+//            if let catPicture = response.result.value {
+////                print("image downloaded: \(catPicture)")
+//                logoImage.af_setImage(withURL: <#T##URL#>, placeholderImage: <#T##UIImage?#>, filter: <#T##ImageFilter?#>, progress: <#T##ImageDownloader.ProgressHandler?##ImageDownloader.ProgressHandler?##(Progress) -> Void#>, progressQueue: <#T##DispatchQueue#>, imageTransition: <#T##UIImageView.ImageTransition#>, runImageTransitionIfCached: <#T##Bool#>, completion: <#T##((DataResponse<UIImage>) -> Void)?##((DataResponse<UIImage>) -> Void)?##(DataResponse<UIImage>) -> Void#>)
+//            }
+//        }
+    }
+    
+    
+    
 
 }
 

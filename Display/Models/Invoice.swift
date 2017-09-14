@@ -68,6 +68,18 @@ class Invoice {
         self.invoiceSerial = invoiceSerial
         self.success = success
         self.comment = comment
+        
+        // inicializar el cliente vacio
+        self.invoiceCustomer = Customer(
+            id: 0,
+            ruc: "",
+            name: "",
+            lastName: "",
+            dob: "",
+            phone: "" )
+        
+        // inicializar el DESCUENTO vacio
+        self.invoiceDiscount = Discount(id: 0, description: "", value: 0.0, type: "")
     }
     
 }

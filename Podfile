@@ -11,6 +11,7 @@ target 'Display' do
   pod 'PromiseKit/Alamofire', '~> 4.0'
   pod "PromiseKit", "~> 4.4"
   pod 'SwiftyJSON'
+  pod 'AlamofireImage', '~> 3.3'
 
   # Pods for Display
 
