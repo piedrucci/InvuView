@@ -24,26 +24,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     @IBOutlet weak var lblPaid: UILabel!
     @IBOutlet weak var lblDiscount: UILabel!
     
+    @IBOutlet weak var viewHeader: UIView!
+    @IBOutlet weak var viewPayment: UIView!
     
-    @IBOutlet weak var logoImage: UIImageView!
-    
-    @IBAction func btnMenu(_ sender: UIButton) {
-        
-        // create the alert
-        let alert = UIAlertController(title: "Acciones", message: "Seleccione la caja", preferredStyle: .alert)
-        
-        // add the actions (buttons)
-        alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel, handler: nil))
-        
-        self.cashRegisters.map{
-            let cr = $0
-            alert.addAction(UIAlertAction(title: $0.name, style: UIAlertActionStyle.default, handler: { action in self.opt(caja: cr) } ))
-        }
-        
-        // show the alert
-        self.present(alert, animated: true, completion: nil)
-        
-    }
     
     var data: Array<Item> = []
     var paymentsData: Array<Payment> = []
@@ -59,6 +42,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
         view.addSubview(activityIndicator)
         
+        viewHeader.isHidden = true
+        viewPayment.isHidden = true
+        lblComment.isHidden = true
+        
         toggleVisible(sw: false)
         
 //        timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(handleMyFunction), userInfo: nil, repeats: false)
@@ -68,10 +55,37 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         getCashRegister()
     }
     
+//    metodo para mostrar el menu de seleccion de la caja que se desea obtener la ultima orden
+    @IBAction func btnMenu(_ sender: UIButton) {
+        
+        // create the alert
+        let alert = UIAlertController(title: "Acciones", message: "Seleccione la caja", preferredStyle: .alert)
+
+        // add the actions (buttons)
+        alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel, handler: nil))
+        
+        //        @discardableResult
+//        listar las cajas registradoras de la sucursal para que pueda ser seleccionada
+        _ = self.cashRegisters.map{ caja in
+            //            let cr = caja
+            alert.addAction(UIAlertAction(title: caja.name, style: UIAlertActionStyle.default, handler: { action in self.fetchData(caja: caja) } ))
+        }
+        
+        // show the alert
+//        alert.addAction(UIAlertAction(title: "Exit", style: UIAlertActionStyle.destructive, handler: {action in exit(0)} ))
+        self.present(alert, animated: true, completion: nil)
+        
+    }
+    
+    
+    
     func handleMyFunction() {
         print("update info...")
     }
     
+    
+    
+//    metodo para cargar las cajas registradoras de la sucursal seleccionada (APIKEY)
     func getCashRegister() -> Void {
         let headers: HTTPHeaders = ["APIKEY": api.apiKey]
         Alamofire.request("https://api.invupos.com/invuApiPos/index.php?r=caja", headers: headers)
@@ -92,11 +106,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
     }
     
-    func opt(caja: CashRegister){
-        print("selecciono la caja \(caja.name)")
-        fetchData(cajaID: caja.id)
-    }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -138,19 +148,15 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         return customUITableCell!
     }
     
-    
-    @IBAction func showMessage() {
-//        let alertController = UIAlertController(title: "Welcome to My First App", message: "Hello World", preferredStyle: UIAlertControllerStyle.alert)
-//        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-//        present(alertController, animated: true, completion: nil)
-    }
-    
-    
-    func fetchData(cajaID: Int) {
-        //orderTimer.invalidate()
+
+
+//    metodo para cargar y mostrar detalles de la ultima orden para la caja seleccionada (ID)
+    func fetchData(caja: CashRegister) {
         toggleActivityIdicator(animate: true)
         
-        let url = api.endPoint + "citas/newOrdenCaja/id/"+String(cajaID)
+        print("selecciono la caja \(caja.name)")
+        //orderTimer.invalidate()
+        let url = api.endPoint + "citas/newOrdenCaja/id/"+String(caja.id)
 //        let url = api.endPoint + "citas/view/id/68304"
         
         let headers: HTTPHeaders = ["APIKEY": api.apiKey]
@@ -195,6 +201,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
         }
     
+//    metodo para parsear todo el JSON devuelto por el request Alamofire
     func loadEntity(json: Data) {
         let json = JSON( data: json )
 //        print(json)
@@ -285,13 +292,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 }
                 
                 
-                
-                
                 // imprimir los resultados
                 if (invoice.success) {
-                    lblSerial.text = invoice.invoiceSerial
-                    lblEmployee.text = invoice.employee.fullName
-                    lblCustomer.text = invoice.customer.fullName
+//                    lblSerial.text = invoice.invoiceSerial
+//                    lblEmployee.text = invoice.employee.fullName
+//                    lblCustomer.text = invoice.customer.fullName
                     
                     // calcular el subtotal ITEMS
                     let subtotal = invoice.items.reduce(0.0, { acum, currentItem in
@@ -336,10 +341,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     tableView.reloadData()
                     PaymentTableView.reloadData()
                 
-                    
-                
                 }
-            
             
             } else {
                 toggleVisible(sw: false)
@@ -353,7 +355,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
     }
     
-    // switch para mostrar-ocultar el ActivityIndicator
+
+//    switch para mostrar-ocultar el ActivityIndicator
     func toggleActivityIdicator(animate: Bool) {
         if (animate) {
             activityIndicator.startAnimating()
@@ -362,11 +365,14 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
     }
     
-    // mostrar / ocultar los objetos en la pantalla
+    
+//    mostrar / ocultar los objetos en la pantalla
     func toggleVisible(sw: Bool){
         tableView.isHidden = !sw
         PaymentTableView.isHidden = !sw
     }
+    
+    
     
     func showImage() {
 //        Alamofire.request("http://i.imgur.com/w5rkSIj.jpg").responseImage { response in
