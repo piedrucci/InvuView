@@ -27,9 +27,27 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     @IBOutlet weak var logoImage: UIImageView!
     
+    @IBAction func btnMenu(_ sender: UIButton) {
+        
+        // create the alert
+        let alert = UIAlertController(title: "Acciones", message: "Seleccione la caja", preferredStyle: .alert)
+        
+        // add the actions (buttons)
+        alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel, handler: nil))
+        
+        self.cashRegisters.map{
+            let cr = $0
+            alert.addAction(UIAlertAction(title: $0.name, style: UIAlertActionStyle.default, handler: { action in self.opt(caja: cr) } ))
+        }
+        
+        // show the alert
+        self.present(alert, animated: true, completion: nil)
+        
+    }
     
     var data: Array<Item> = []
     var paymentsData: Array<Payment> = []
+    var cashRegisters: [CashRegister] = []
     
     private var timer: Timer?
     
@@ -43,14 +61,40 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         toggleVisible(sw: false)
         
-        timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(handleMyFunction), userInfo: nil, repeats: false)
+//        timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(handleMyFunction), userInfo: nil, repeats: false)
         
         showImage()
-        fetchData()
+//        fetchData(cajaID: 3)
+        getCashRegister()
     }
     
     func handleMyFunction() {
         print("update info...")
+    }
+    
+    func getCashRegister() -> Void {
+        let headers: HTTPHeaders = ["APIKEY": api.apiKey]
+        Alamofire.request("https://api.invupos.com/invuApiPos/index.php?r=caja", headers: headers)
+            .responseJSON().then { json -> Void in
+                
+                let cajas = JSON(json)
+                self.cashRegisters = cajas["data"].arrayValue.map{ caja in
+                    return CashRegister(
+                        id: Int(caja["id"].stringValue)!,
+                        name: caja["nombre"].stringValue,
+                        ip_raspberry: caja["ip_raspberry"].stringValue,
+                        ip_precuenta: caja["ip_precuenta"].stringValue
+                    )
+                }
+            }
+            .catch{ error in
+                print (error)
+        }
+    }
+    
+    func opt(caja: CashRegister){
+        print("selecciono la caja \(caja.name)")
+        fetchData(cajaID: caja.id)
     }
 
     override func didReceiveMemoryWarning() {
@@ -102,15 +146,14 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     
-    func fetchData() {
+    func fetchData(cajaID: Int) {
         //orderTimer.invalidate()
         toggleActivityIdicator(animate: true)
         
-        let url = api.endPoint + "citas/newOrdenCaja/id/2"
+        let url = api.endPoint + "citas/newOrdenCaja/id/"+String(cajaID)
 //        let url = api.endPoint + "citas/view/id/68304"
         
         let headers: HTTPHeaders = ["APIKEY": api.apiKey]
-        
         
         Alamofire.request(url, headers: headers).responseData().then
             { json in
@@ -173,7 +216,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     id: Int(json["status"]["id"].string!)!,
                     description: json["status"]["descripcion"].string!
                 )
-                
                 
                 // parsear los ITEMS en la factura
                 let items:Array<Item> = json["items"].arrayValue.map {

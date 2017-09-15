@@ -31,6 +31,7 @@
 		20F20F6E1F5F34B2003147D4 /* ClassPayment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F20F6D1F5F34B2003147D4 /* ClassPayment.swift */; };
 		20F20F701F5F400E003147D4 /* PaymentType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F20F6F1F5F400E003147D4 /* PaymentType.swift */; };
 		20F20F721F5F4F14003147D4 /* ClassStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F20F711F5F4F14003147D4 /* ClassStatus.swift */; };
+		20FF39811F6C3E9000127A8D /* CashRegister.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20FF39801F6C3E9000127A8D /* CashRegister.swift */; };
 		A9736CA92344EB9F3261D1FD /* Pods_DisplayUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83D91F1BDC08B8AC8336403F /* Pods_DisplayUITests.framework */; };
 		CAB9150D58DDD6354712BBA1 /* Pods_Display.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 755904904131D978FA8A8958 /* Pods_Display.framework */; };
 		CFCD587183C90AE902BFD8C5 /* Pods_DisplayTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FFF9A55543519002AE1DFFB7 /* Pods_DisplayTests.framework */; };
@@ -83,6 +84,7 @@
 		20F20F6D1F5F34B2003147D4 /* ClassPayment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ClassPayment.swift; path = classes/ClassPayment.swift; sourceTree = "<group>"; };
 		20F20F6F1F5F400E003147D4 /* PaymentType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaymentType.swift; path = classes/PaymentType.swift; sourceTree = "<group>"; };
 		20F20F711F5F4F14003147D4 /* ClassStatus.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ClassStatus.swift; path = classes/ClassStatus.swift; sourceTree = "<group>"; };
+		20FF39801F6C3E9000127A8D /* CashRegister.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CashRegister.swift; path = Models/CashRegister.swift; sourceTree = "<group>"; };
 		2A6DDE4ED72B1DEDD4CFC962 /* Pods-DisplayTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DisplayTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DisplayTests/Pods-DisplayTests.debug.xcconfig"; sourceTree = "<group>"; };
 		6FEAFD323523DA36DCD8C4CE /* Pods-DisplayUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DisplayUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DisplayUITests/Pods-DisplayUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		755904904131D978FA8A8958 /* Pods_Display.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Display.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -132,6 +134,7 @@
 				20B687D61F619E180075FAC9 /* Modifier.swift */,
 				20B687D81F619E3E0075FAC9 /* Status.swift */,
 				20C5E0C01F61F70800A281D3 /* Discount.swift */,
+				20FF39801F6C3E9000127A8D /* CashRegister.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -525,6 +528,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				20F20F641F5F02D4003147D4 /* ClassCustomer.swift in Sources */,
+				20FF39811F6C3E9000127A8D /* CashRegister.swift in Sources */,
 				20B687D51F619DF70075FAC9 /* Payment.swift in Sources */,
 				20E901D71F5DECB900858D4A /* Api.swift in Sources */,
 				20F20F701F5F400E003147D4 /* PaymentType.swift in Sources */,
