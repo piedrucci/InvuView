@@ -34,17 +34,22 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     private var timer: Timer?
     
+    //let appDefaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         activityIndicator.center = self.view.center
         activityIndicator.hidesWhenStopped = true
         activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
+
         view.addSubview(activityIndicator)
         
         viewHeader.isHidden = true
         viewPayment.isHidden = true
         lblComment.isHidden = true
+        
+//        UserDefaults.standard.set(4, forKey: "cashRegisterID")
         
         toggleVisible(sw: false)
         
@@ -52,7 +57,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         showImage()
 //        fetchData(cajaID: 3)
-        getCashRegister()
+//        getCashRegister()
     }
     
 //    metodo para mostrar el menu de seleccion de la caja que se desea obtener la ultima orden
@@ -81,29 +86,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     func handleMyFunction() {
         print("update info...")
-    }
-    
-    
-    
-//    metodo para cargar las cajas registradoras de la sucursal seleccionada (APIKEY)
-    func getCashRegister() -> Void {
-        let headers: HTTPHeaders = ["APIKEY": api.apiKey]
-        Alamofire.request("https://api.invupos.com/invuApiPos/index.php?r=caja", headers: headers)
-            .responseJSON().then { json -> Void in
-                
-                let cajas = JSON(json)
-                self.cashRegisters = cajas["data"].arrayValue.map{ caja in
-                    return CashRegister(
-                        id: Int(caja["id"].stringValue)!,
-                        name: caja["nombre"].stringValue,
-                        ip_raspberry: caja["ip_raspberry"].stringValue,
-                        ip_precuenta: caja["ip_precuenta"].stringValue
-                    )
-                }
-            }
-            .catch{ error in
-                print (error)
-        }
     }
     
     
