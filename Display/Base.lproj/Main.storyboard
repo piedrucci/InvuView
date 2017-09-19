@@ -134,24 +134,16 @@
                                 <rect key="frame" x="20" y="20" width="984" height="555"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
-                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="72" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="yUc-wA-26y">
-                                        <rect key="frame" x="8" y="8" width="968" height="354"/>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="LOGO-SUVLAS_WaterMark" translatesAutoresizingMaskIntoConstraints="NO" id="cja-wH-0du">
+                                        <rect key="frame" x="8" y="8" width="968" height="547"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <view key="tableHeaderView" contentMode="scaleToFill" id="ejf-HN-Kc4">
-                                            <rect key="frame" x="0.0" y="0.0" width="968" height="44"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Cant" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VG2-o5-Hcv">
-                                                    <rect key="frame" x="8" y="12" width="37" height="21"/>
-                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <nil key="textColor"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                            </subviews>
-                                            <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
-                                        </view>
+                                    </imageView>
+                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="72" sectionHeaderHeight="72" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="yUc-wA-26y">
+                                        <rect key="frame" x="8" y="8" width="968" height="547"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                        <color key="separatorColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         <prototypes>
                                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="Cell" rowHeight="72" id="5bM-u1-Un9" customClass="CustomCell" customModule="Display" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="72" width="968" height="72"/>
@@ -174,7 +166,7 @@
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="La" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="M8I-Dz-LJ5">
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="La" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="M8I-Dz-LJ5">
                                                             <rect key="frame" x="8" y="19" width="54" height="31"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="30"/>
@@ -182,7 +174,9 @@
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                     </subviews>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                                 </tableViewCellContentView>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                                 <connections>
                                                     <outlet property="cellAmount" destination="xu9-ZC-ddx" id="9RL-Lm-C6w"/>
                                                     <outlet property="cellCant" destination="M8I-Dz-LJ5" id="y4H-67-afY"/>
@@ -280,6 +274,13 @@
                                             <action selector="btnMenu:" destination="BYZ-38-t0r" eventType="touchUpInside" id="5S1-w4-c9h"/>
                                         </connections>
                                     </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="v01-3G-Ptg">
+                                        <rect key="frame" x="584" y="11" width="381" height="47"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="36"/>
+                                        <color key="textColor" red="0.90394557903329853" green="0.9485607809527683" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                                 <color key="backgroundColor" red="0.12941176469999999" green="0.58823529409999997" blue="0.95294117649999999" alpha="1" colorSpace="calibratedRGB"/>
                             </view>
@@ -294,6 +295,7 @@
                         <outlet property="lblEmployee" destination="hRF-xf-6u6" id="DH7-LB-XgX"/>
                         <outlet property="lblPaid" destination="NPy-Ja-QrK" id="fqc-q0-1fP"/>
                         <outlet property="lblSerial" destination="Cjm-m0-LCY" id="DPs-a5-iMf"/>
+                        <outlet property="lblShopName" destination="v01-3G-Ptg" id="l0k-XJ-cBJ"/>
                         <outlet property="lblStrDiscount" destination="UxG-lY-IAS" id="sii-eC-BOJ"/>
                         <outlet property="lblSubtotal" destination="I1G-nl-kpx" id="SJj-7j-XLI"/>
                         <outlet property="lblTax" destination="Uez-F5-0sk" id="VcZ-NQ-CR8"/>
@@ -305,7 +307,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="353" y="-34"/>
+            <point key="canvasLocation" x="352.734375" y="-34.375"/>
         </scene>
         <!--Login Controller-->
         <scene sceneID="5bZ-xM-nbp">
@@ -374,6 +376,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="LOGO-SUVLAS_WaterMark" width="350" height="350"/>
         <image name="invulogin" width="759" height="403"/>
     </resources>
 </document>

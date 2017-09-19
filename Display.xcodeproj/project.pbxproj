@@ -20,6 +20,7 @@
 		20C5E0C11F61F70800A281D3 /* Discount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C5E0C01F61F70800A281D3 /* Discount.swift */; };
 		20C750AA1F700D0800E03A64 /* LoginController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C750A91F700D0800E03A64 /* LoginController.swift */; };
 		20C750AC1F70330800E03A64 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C750AB1F70330800E03A64 /* Utils.swift */; };
+		20C750B31F71A99900E03A64 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C750B21F71A99900E03A64 /* Session.swift */; };
 		20DD5C911F55B0510094DA65 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20DD5C901F55B0510094DA65 /* AppDelegate.swift */; };
 		20DD5C931F55B0510094DA65 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20DD5C921F55B0510094DA65 /* ViewController.swift */; };
 		20DD5C961F55B0510094DA65 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 20DD5C941F55B0510094DA65 /* Main.storyboard */; };
@@ -72,6 +73,7 @@
 		20C750A91F700D0800E03A64 /* LoginController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginController.swift; sourceTree = "<group>"; };
 		20C750AB1F70330800E03A64 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Utils.swift; path = utils/Utils.swift; sourceTree = "<group>"; };
 		20C750AD1F7159FE00E03A64 /* Display-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Display-Bridging-Header.h"; sourceTree = "<group>"; };
+		20C750B21F71A99900E03A64 /* Session.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Session.swift; path = Models/Session.swift; sourceTree = "<group>"; };
 		20DD5C8D1F55B0510094DA65 /* Display.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Display.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20DD5C901F55B0510094DA65 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		20DD5C921F55B0510094DA65 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -140,6 +142,7 @@
 				20B687D81F619E3E0075FAC9 /* Status.swift */,
 				20C5E0C01F61F70800A281D3 /* Discount.swift */,
 				20FF39801F6C3E9000127A8D /* CashRegister.swift */,
+				20C750B21F71A99900E03A64 /* Session.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -546,6 +549,7 @@
 				20F20F721F5F4F14003147D4 /* ClassStatus.swift in Sources */,
 				20B687D11F619DC90075FAC9 /* Customer.swift in Sources */,
 				20C750AA1F700D0800E03A64 /* LoginController.swift in Sources */,
+				20C750B31F71A99900E03A64 /* Session.swift in Sources */,
 				20B687D71F619E180075FAC9 /* Modifier.swift in Sources */,
 				20DD5C911F55B0510094DA65 /* AppDelegate.swift in Sources */,
 				20C5E0C11F61F70800A281D3 /* Discount.swift in Sources */,

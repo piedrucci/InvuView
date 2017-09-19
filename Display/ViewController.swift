@@ -23,6 +23,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     @IBOutlet weak var lblTotal: UILabel!
     @IBOutlet weak var lblPaid: UILabel!
     @IBOutlet weak var lblDiscount: UILabel!
+    @IBOutlet weak var lblShopName: UILabel!
     
     @IBOutlet weak var viewHeader: UIView!
     @IBOutlet weak var viewPayment: UIView!
@@ -55,6 +56,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         showImage()
         fetchData()
+        
+//        eliminar las rayas despues del ultimo elemento del tableview
+        tableView.tableFooterView = UIView()
+        
+        lblShopName.text = UserDefaults.standard.string(forKey: "shopName")
     }
     
 //    metodo para mostrar el menu de seleccion de la caja que se desea obtener la ultima orden
@@ -111,6 +117,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             if item.modifiers.count > 0 {
                 
             }
+            customCell.backgroundColor = UIColor.clear
+            customCell.contentView.backgroundColor = UIColor.clear
             customUITableCell = customCell
             
         } else if (tableView == self.PaymentTableView) {
@@ -124,10 +132,29 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         return customUITableCell!
     }
     
-
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        
+        if tableView == self.tableView{
+            let customCell = tableView.dequeueReusableCell(withIdentifier: "Cell") as! CustomCell
+            customCell.cellCant.text = "Cant"
+            customCell.cellDescripcion.text = "Description"
+            customCell.cellAmount.text = "Amount"
+            let color: UIColor = UIColor(red: 230 / 255, green: 230 / 255, blue: 230 / 255, alpha: 0.9)
+            customCell.backgroundColor = color
+            return customCell
+        }
+        return nil
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if tableView == self.tableView{
+            return 72
+        }
+        return 0
+    }
 
 //    metodo para cargar y mostrar detalles de la ultima orden para la caja seleccionada (ID)
-    func fetchData() {
+    func fetchData(sender : Any? = nil) {
         
         toggleActivityIdicator(animate: true)
         
@@ -136,7 +163,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         let url = api.endPoint + "citas/newOrdenCaja/id/"+String(cashRegisterID)
 //        let url = api.endPoint + "citas/view/id/68304"
         
-        let headers: HTTPHeaders = ["APIKEY": api.apiKey]
+        let headers: HTTPHeaders = ["APIKEY": UserDefaults.standard.string(forKey: "APIKEY")!]
         
         Alamofire.request(url, headers: headers).responseData().then
             { json in
@@ -183,10 +210,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 //    metodo para parsear todo el JSON devuelto por el request Alamofire
     func loadEntity(json: Data) {
         let json = JSON( data: json )
-        
+        Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(ViewController.fetchData(sender:)), userInfo: nil, repeats: false)
         if (json["encontro"].bool!){
             
-            if json["status"]["descripcion"].string! == "Cerrada" {
+//            if json["status"]["descripcion"].string! == "Cerrada" {
                 toggleVisible(sw: true)
                 
                 let invoice = Invoice(
@@ -321,9 +348,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 
                 }
             
-            } else {
-                toggleVisible(sw: false)
-            }
+//            } else {
+//                toggleVisible(sw: false)
+//            }
             
         } else {
             print(json["msg"].string!)

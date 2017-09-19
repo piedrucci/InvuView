@@ -26,6 +26,8 @@ class LoginController: UIViewController {
     var cashRegisters: [CashRegister] = []
     var validCashRegisterInfo: Bool = false
     
+    var session: Session!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -104,9 +106,13 @@ class LoginController: UIViewController {
                 
                 let json = JSON(response.result.value!)
                 
-//                fijar el APIKEY por defecto para la APP
-//                UserDefaults.standard.set(String(describing: json["data"][self.APIKEY]), forKey: self.APIKEY)
-                self.strAPIKEY = String(describing: json["data"][self.APIKEY])
+                self.session = Session(
+                    id: json["data"]["id"].intValue,
+                    username: json["data"]["username"].stringValue,
+                    apikey: json["data"][self.APIKEY].stringValue,
+                    shopname: json["data"]["nombre_negocio"].stringValue,
+                    franchisename: json["data"]["nombreFranquicia"].stringValue
+                )
                 
                 self.getCashRegister()
                 
@@ -126,7 +132,7 @@ class LoginController: UIViewController {
     
     //    metodo para cargar las cajas registradoras de la sucursal seleccionada (APIKEY)
     func getCashRegister() -> Void {
-        let headers: HTTPHeaders = ["APIKEY": self.strAPIKEY]
+        let headers: HTTPHeaders = ["APIKEY": self.session.apiKey]
         Alamofire.request("https://api.invupos.com/invuApiPos/index.php?r=caja", headers: headers)
             .responseJSON() { response in
                 switch response.result {
@@ -174,9 +180,10 @@ class LoginController: UIViewController {
     
     
     func setCashRegister(caja: CashRegister) {
-        print("selecciono \(caja.name)")
+//        print("selecciono \(caja.name)")
         UserDefaults.standard.set(self.strAPIKEY, forKey: self.APIKEY)
         UserDefaults.standard.set(caja.id, forKey: "cashRegisterID")
+        UserDefaults.standard.set(self.session.shopName, forKey: "shopName")
         self.performSegue(withIdentifier: "segue1", sender: self)
     }
     
