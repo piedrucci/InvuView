@@ -12,12 +12,38 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
-
+    
+    var validCashRegisterInfo : Bool!
+    
+    let APIKEY = "APIKEY"
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
+        if let apiKey = UserDefaults.standard.string(forKey: self.APIKEY) {
+            self.validCashRegisterInfo = true
+            print("the default APIKEY is \(apiKey)")
+        }else{
+            self.validCashRegisterInfo = false
+            print("no default apiKey set ")
+        }
         
+        if let defaultCashRegisterID = UserDefaults.standard.string(forKey: "cashRegisterID") {
+            self.validCashRegisterInfo = true
+            print("the default cash register ID is \(defaultCashRegisterID)")
+        }else{
+            self.validCashRegisterInfo = false
+            print("no default cash register ID set ")
+        }
+        
+//        self.validCashRegisterInfo = false
+        if self.validCashRegisterInfo {
+            print("caja ya configurada")
+            let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
+            let controller = storyboard.instantiateViewController(withIdentifier: "viewcontroller")
+            window?.rootViewController = controller
+            //self.performSegue(withIdentifier: "segue1", sender: nil)
+            
+        }
         
         return true
     }

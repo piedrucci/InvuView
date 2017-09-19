@@ -30,7 +30,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     var data: Array<Item> = []
     var paymentsData: Array<Payment> = []
-    var cashRegisters: [CashRegister] = []
+    
     
     private var timer: Timer?
     
@@ -49,36 +49,30 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         viewPayment.isHidden = true
         lblComment.isHidden = true
         
-//        UserDefaults.standard.set(4, forKey: "cashRegisterID")
-        
         toggleVisible(sw: false)
         
 //        timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(handleMyFunction), userInfo: nil, repeats: false)
         
         showImage()
-//        fetchData(cajaID: 3)
-//        getCashRegister()
+        fetchData()
     }
     
 //    metodo para mostrar el menu de seleccion de la caja que se desea obtener la ultima orden
     @IBAction func btnMenu(_ sender: UIButton) {
         
-        // create the alert
-        let alert = UIAlertController(title: "Acciones", message: "Seleccione la caja", preferredStyle: .alert)
+        UserDefaults.standard.removeObject(forKey: "APIKEY")
+        UserDefaults.standard.removeObject(forKey: "cashRegisterID")
+        
+        
+        let window = (UIApplication.shared.delegate as! AppDelegate).window
+        if (window?.rootViewController as? LoginController) != nil{
+            self.dismiss(animated: true, completion: nil)
+        }else{
+            let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
+            let controller = storyboard.instantiateViewController(withIdentifier: "logincontroller")
+            window?.rootViewController = controller
 
-        // add the actions (buttons)
-        alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel, handler: nil))
-        
-        //        @discardableResult
-//        listar las cajas registradoras de la sucursal para que pueda ser seleccionada
-        _ = self.cashRegisters.map{ caja in
-            //            let cr = caja
-            alert.addAction(UIAlertAction(title: caja.name, style: UIAlertActionStyle.default, handler: { action in self.fetchData(caja: caja) } ))
         }
-        
-        // show the alert
-//        alert.addAction(UIAlertAction(title: "Exit", style: UIAlertActionStyle.destructive, handler: {action in exit(0)} ))
-        self.present(alert, animated: true, completion: nil)
         
     }
     
@@ -112,7 +106,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             
             customCell.cellCant.text = String(item.quantity)
             customCell.cellDescripcion.text = item.description
-            customCell.cellAmount.text = "$"+String(item.price)
+            customCell.cellAmount.text = "$"+String(format: "%.02f", item.price)
             
             if item.modifiers.count > 0 {
                 
@@ -133,12 +127,13 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
 
 //    metodo para cargar y mostrar detalles de la ultima orden para la caja seleccionada (ID)
-    func fetchData(caja: CashRegister) {
+    func fetchData() {
+        
         toggleActivityIdicator(animate: true)
         
-        print("selecciono la caja \(caja.name)")
+        let cashRegisterID = UserDefaults.standard.integer(forKey: "cashRegisterID")
         //orderTimer.invalidate()
-        let url = api.endPoint + "citas/newOrdenCaja/id/"+String(caja.id)
+        let url = api.endPoint + "citas/newOrdenCaja/id/"+String(cashRegisterID)
 //        let url = api.endPoint + "citas/view/id/68304"
         
         let headers: HTTPHeaders = ["APIKEY": api.apiKey]
@@ -183,10 +178,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
         }
     
+    
+    
 //    metodo para parsear todo el JSON devuelto por el request Alamofire
     func loadEntity(json: Data) {
         let json = JSON( data: json )
-//        print(json)
         
         if (json["encontro"].bool!){
             
