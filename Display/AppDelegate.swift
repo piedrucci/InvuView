@@ -12,37 +12,40 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    
-    var validCashRegisterInfo : Bool!
-    
+    var validCashRegisterInfo : Bool = false
     let APIKEY = "APIKEY"
+    
+    
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        if let apiKey = UserDefaults.standard.string(forKey: self.APIKEY) {
-            self.validCashRegisterInfo = true
-            print("the default APIKEY is \(apiKey)")
-        }else{
-            self.validCashRegisterInfo = false
-            print("no default apiKey set ")
-        }
         
-        if let defaultCashRegisterID = UserDefaults.standard.string(forKey: "cashRegisterID") {
-            self.validCashRegisterInfo = true
-            print("the default cash register ID is \(defaultCashRegisterID)")
-        }else{
-            self.validCashRegisterInfo = false
-            print("no default cash register ID set ")
-        }
+        //        borrar los espacios en blanco
+        var apiKey: String? = UserDefaults.standard.string(forKey: self.APIKEY)
+        apiKey = (apiKey?.trimmingCharacters(in: CharacterSet.whitespaces))
+
+        //        borrar los espacios en blanco
+        var defaultCashRegisterID: String? = UserDefaults.standard.string(forKey: "cashRegisterID")
+        defaultCashRegisterID = (defaultCashRegisterID?.trimmingCharacters(in: CharacterSet.whitespaces))
         
-//        self.validCashRegisterInfo = false
+        
+        self.validCashRegisterInfo = ( apiKey != nil ? apiKey!.characters.count > 0 : false)
+        
         if self.validCashRegisterInfo {
-            print("caja ya configurada")
+            self.validCashRegisterInfo = (defaultCashRegisterID != nil ? defaultCashRegisterID!.characters.count > 0 : false)
+        }
+
+        if self.validCashRegisterInfo {
+            print("Configuracion de caja encontrada!")
+            print("la \(self.APIKEY) es \(apiKey ?? "No hay") y el ID de Caja es \(defaultCashRegisterID ?? "No hay")")
+            
             let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
             let controller = storyboard.instantiateViewController(withIdentifier: "viewcontroller")
             window?.rootViewController = controller
             //self.performSegue(withIdentifier: "segue1", sender: nil)
-            
+        }else {
+            print("No existe configuracion de caja, debe loguearse!")
         }
         
         return true

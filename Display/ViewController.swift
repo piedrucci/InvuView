@@ -2,7 +2,7 @@ import UIKit
 import Alamofire
 import PromiseKit
 import SwiftyJSON
-import AlamofireImage
+import ImageLoader
 
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate{
 
@@ -25,17 +25,33 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     @IBOutlet weak var lblDiscount: UILabel!
     @IBOutlet weak var lblShopName: UILabel!
     
+    
+    @IBOutlet var mainView: UIView!
+    @IBOutlet weak var btnLogout: UIButton!
     @IBOutlet weak var viewHeader: UIView!
     @IBOutlet weak var viewPayment: UIView!
+    @IBOutlet weak var viewTotal: UIView!
     
+    @IBOutlet weak var shopLogo: UIImageView!
+    
+    var count = 0
+    
+    var lastId = -1
     
     var data: Array<Item> = []
     var paymentsData: Array<Payment> = []
     
+    var numItems = -1
+    
     
     private var timer: Timer?
     
-    //let appDefaults = UserDefaults.standard
+
+    
+    
+    
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,10 +67,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         lblComment.isHidden = true
         
         toggleVisible(sw: false)
-        
-//        timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(handleMyFunction), userInfo: nil, repeats: false)
-        
-        showImage()
+        //self.tableView.rowHeight = UITableViewAutomaticDimension
+        //self.tableView.estimatedRowHeight = 72
         fetchData()
         
 //        eliminar las rayas despues del ultimo elemento del tableview
@@ -65,9 +79,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
 //    metodo para mostrar el menu de seleccion de la caja que se desea obtener la ultima orden
     @IBAction func btnMenu(_ sender: UIButton) {
+        self.timer?.invalidate()
         
         UserDefaults.standard.removeObject(forKey: "APIKEY")
         UserDefaults.standard.removeObject(forKey: "cashRegisterID")
+        UserDefaults.standard.removeObject(forKey: "pathLogo")
+        UserDefaults.standard.removeObject(forKey: "shopName")
         
         
         let window = (UIApplication.shared.delegate as! AppDelegate).window
@@ -77,15 +94,20 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
             let controller = storyboard.instantiateViewController(withIdentifier: "logincontroller")
             window?.rootViewController = controller
-
         }
         
     }
     
     
-    
-    func handleMyFunction() {
-        print("update info...")
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+//        cargar el logo de la tienda (async)
+        let pathLogo: String = UserDefaults.standard.string(forKey: "pathLogo")!
+        shopLogo.load.request(with: pathLogo)
+        
+//        print(self.mainView.backgroundColor ?? "-")
+//        0.937255 0.937255 0.956863 1
     }
     
     
@@ -102,23 +124,37 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         return dataCount
     }
     
+    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        return nil
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
         var customUITableCell: UITableViewCell?
         
         if (tableView == self.tableView) {
             let customCell = tableView.dequeueReusableCell(withIdentifier: "Cell") as! CustomCell
-            let item: Item = data[indexPath.row]
+            customCell.backgroundColor = UIColor.clear
+            customCell.contentView.backgroundColor = UIColor.clear
             
+            
+            let item: Item = data[indexPath.row]
             customCell.cellCant.text = String(item.quantity)
             customCell.cellDescripcion.text = item.description
             customCell.cellAmount.text = "$"+String(format: "%.02f", item.price)
             
+            
+            var modifierDescription: String = ""
             if item.modifiers.count > 0 {
-                
+                modifierDescription = item.modifiers.reduce("", { acum, currentItem in
+                    acum + currentItem.name + ", "
+                })
+//                _ = item.modifiers.re map{
+//                    modifierDescription = "\(modifierDescription) \($0.name),"
+//                }
             }
-            customCell.backgroundColor = UIColor.clear
-            customCell.contentView.backgroundColor = UIColor.clear
+            customCell.lblModifier.text = modifierDescription
+            
             customUITableCell = customCell
             
         } else if (tableView == self.PaymentTableView) {
@@ -152,6 +188,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
         return 0
     }
+    
+    
 
 //    metodo para cargar y mostrar detalles de la ultima orden para la caja seleccionada (ID)
     func fetchData(sender : Any? = nil) {
@@ -169,7 +207,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             { json in
                 self.loadEntity(json: json)
             }.catch { error in
-                print(error)
+                let alertError = UIAlertController(title: "Invu Display", message: "Error getting data", preferredStyle: .alert)
+                alertError.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+                self.present(alertError, animated: true, completion: nil)
+//                print(error)
+                self.toggleActivityIdicator(animate: false)
+                self.btnMenu(self.btnLogout)
             }
         
 //        Alamofire.request(url, headers: headers).validate()
@@ -204,13 +247,17 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 //            }
 
         }
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        self.timer?.invalidate()
+    }
     
     
     
 //    metodo para parsear todo el JSON devuelto por el request Alamofire
     func loadEntity(json: Data) {
         let json = JSON( data: json )
-        Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(ViewController.fetchData(sender:)), userInfo: nil, repeats: false)
+       timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(ViewController.fetchData(sender:)), userInfo: nil, repeats: false)
         if (json["encontro"].bool!){
             
 //            if json["status"]["descripcion"].string! == "Cerrada" {
@@ -222,14 +269,19 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     success      : json["encontro"].bool!,
                     comment      : json["comentario"].string!
                 )
-                
+            
+            
+            
+            
+            
+            
                 // datos del status
                 invoice.status = Status(
                     id: Int(json["status"]["id"].string!)!,
                     description: json["status"]["descripcion"].string!
                 )
                 
-                // parsear los ITEMS en la factura
+                // parsear los ITEMS con sus respectivo MODIFICADORES en la factura
                 let items:Array<Item> = json["items"].arrayValue.map {
                     
                     let arrayModifiers = $0["modificadores"].arrayValue
@@ -252,8 +304,13 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     )
                 }
                 invoice.items = items
-                
-                
+            
+//            _ = items.map{
+//                if $0.modifiers.count>0 {
+//                    print("tiene modificadores \($0.description)")
+//                }
+//            }
+            
                 // parsear los PAGOS en la factura
                 let payments: Array<Payment> = json["pagos"].arrayValue.map {
                     Payment(
@@ -343,6 +400,25 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     data = invoice.items
                     paymentsData = invoice.payments
                     
+                    //            ============================================================================
+                    //            ocultar la orden luego de 30 segundos
+//                                    if invoice.id == lastId && items.count == numItems {
+//                                        count = count + 1
+//                                        if count > 4{
+//                                            self.tableView.isHidden = true
+//                                            self.viewTotal.isHidden = true
+//                                        }
+//                                    }else{
+//                                        count = 0
+//                                        lastId = invoice.id
+//                                        self.tableView.isHidden = false
+//                                        self.viewTotal.isHidden = false
+//                                    }
+                    
+                                    numItems = items.count
+                    //            ============================================================================
+
+                    
                     tableView.reloadData()
                     PaymentTableView.reloadData()
                 
@@ -363,6 +439,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
 //    switch para mostrar-ocultar el ActivityIndicator
     func toggleActivityIdicator(animate: Bool) {
+        UIApplication.shared.isNetworkActivityIndicatorVisible = animate
         if (animate) {
             activityIndicator.startAnimating()
         }else if (!animate) {
@@ -376,18 +453,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         tableView.isHidden = !sw
         PaymentTableView.isHidden = !sw
     }
-    
-    
-    
-    func showImage() {
-//        Alamofire.request("http://i.imgur.com/w5rkSIj.jpg").responseImage { response in
-//            if let catPicture = response.result.value {
-////                print("image downloaded: \(catPicture)")
-//                logoImage.af_setImage(withURL: <#T##URL#>, placeholderImage: <#T##UIImage?#>, filter: <#T##ImageFilter?#>, progress: <#T##ImageDownloader.ProgressHandler?##ImageDownloader.ProgressHandler?##(Progress) -> Void#>, progressQueue: <#T##DispatchQueue#>, imageTransition: <#T##UIImageView.ImageTransition#>, runImageTransitionIfCached: <#T##Bool#>, completion: <#T##((DataResponse<UIImage>) -> Void)?##((DataResponse<UIImage>) -> Void)?##(DataResponse<UIImage>) -> Void#>)
-//            }
-//        }
-    }
-    
     
     
 

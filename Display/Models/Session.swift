@@ -22,6 +22,15 @@ class Session {
     var bac: Bool = false
     var franchiseId: Int = 0
     var franchiseName: String = ""
+    var strLogo: String = ""
+    
+    var logoName: String {
+        get {
+            return strLogo
+        } set (v) {
+            strLogo = v
+        }
+    }
     
     init(id: Int, username: String, apikey: String, shopname: String, franchisename: String,
          password: String! = "", urlimages: String! = ""){
@@ -33,5 +42,6 @@ class Session {
         
         self.password = password
         self.urlImages = urlimages
+//        self.logoName = logoname
     }
 }

@@ -12,12 +12,14 @@ import Alamofire
 import SwiftyJSON
 
 class LoginController: UIViewController {
-    
+//    invu: ff9907a80070300578eb65a2137670009e8c17cf
+//    lcaesars: cc8efd32e2b3c695ecf2835a05e5e75053012dab
     
     
     @IBOutlet weak var txtUsername: UITextField!
     @IBOutlet weak var txtPassword: UITextField!
     @IBOutlet weak var button: UIButton!
+    @IBOutlet weak var logoImage: UIImageView!
     
     var activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView()
     
@@ -30,15 +32,11 @@ class LoginController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+    
         activityIndicator.center = self.view.center
         activityIndicator.hidesWhenStopped = true
         activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
         view.addSubview(activityIndicator)
-        
-        txtUsername.text = "lcaesarsvz.pos"
-        txtPassword.text = "invu2017"
-//        txtPassword.text = "cc8efd32e2b3c695ecf2835a05e5e75053012dab"
         
         button.layer.borderWidth = 1
         button.layer.cornerRadius = 20
@@ -46,32 +44,23 @@ class LoginController: UIViewController {
         
     }
     override func viewDidAppear(_ animated: Bool) {
-        if let apiKey = UserDefaults.standard.string(forKey: self.APIKEY) {
-            self.validCashRegisterInfo = true
-            print("the default APIKEY is \(apiKey)")
-        }else{
-            self.validCashRegisterInfo = false
-            print("no default apiKey set ")
-        }
         
-        if let defaultCashRegisterID = UserDefaults.standard.string(forKey: "cashRegisterID") {
-            self.validCashRegisterInfo = true
-            print("the default cash register ID is \(defaultCashRegisterID)")
-        }else{
-            self.validCashRegisterInfo = false
-            print("no default cash register ID set ")
-        }
-        
-//        if self.validCashRegisterInfo {
-//            print("caja ya configurada")
-//            let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
-//            let controller = storyboard.instantiateViewController(withIdentifier: "viewcontroller")
-//            //self.present(controller, animated: false, completion: nil)
-//            //self.performSegue(withIdentifier: "segue1", sender: nil)
-//            
+//        if let apiKey = UserDefaults.standard.string(forKey: self.APIKEY) {
+//            self.validCashRegisterInfo = true
+//            print("the default APIKEY is \(apiKey)")
 //        }else{
-//            
+//            self.validCashRegisterInfo = false
+//            print("no default apiKey set ")
 //        }
+//        
+//        if let defaultCashRegisterID = UserDefaults.standard.string(forKey: "cashRegisterID") {
+//            self.validCashRegisterInfo = true
+//            print("the default cash register ID is \(defaultCashRegisterID)")
+//        }else{
+//            self.validCashRegisterInfo = false
+//            print("no default cash register ID set ")
+//        }
+        
         super.viewDidAppear(animated)
         
     }
@@ -82,47 +71,73 @@ class LoginController: UIViewController {
     
     @IBAction func loginClick(_ sender: Any) {
         
-        UIApplication.shared.isNetworkActivityIndicatorVisible = true
-        activityIndicator.startAnimating()
+        let userName: String = (txtUsername.text?.trimmingCharacters(in: CharacterSet.whitespaces))!
+        let password: String = (txtPassword.text?.trimmingCharacters(in: CharacterSet.whitespaces))!
+        let alert: UIAlertController = UIAlertController(title: "", message: "", preferredStyle: .actionSheet)
+        alert.title = "Login into App"
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        alert.popoverPresentationController?.permittedArrowDirections = .down
         
-        let url = "https://api.invupos.com/invuApiPos/index.php?r=site/ApiLogin"
-        let parameters : [String: String] = [
-            "username": txtUsername.text!,
-            "password": self.passwordToSha1(password: txtPassword.text!)
-        ]
-
-        Alamofire.request(
-            url,
-            method: .post,
-            parameters: parameters,
-            encoding: URLEncoding.default,
-            headers: nil)
-            .responseJSON() { response in
-            switch response.result {
-                
-            case .success:
-                UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                self.activityIndicator.stopAnimating()
-                
-                let json = JSON(response.result.value!)
-                
-                self.session = Session(
-                    id: json["data"]["id"].intValue,
-                    username: json["data"]["username"].stringValue,
-                    apikey: json["data"][self.APIKEY].stringValue,
-                    shopname: json["data"]["nombre_negocio"].stringValue,
-                    franchisename: json["data"]["nombreFranquicia"].stringValue
-                )
-                
-                self.getCashRegister()
-                
-            case .failure(let error):
-                print("")
-                print(error)
-                UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                self.activityIndicator.stopAnimating()
-            }
+        if userName == "" {
+            alert.message = "Enter the username"
+            alert.popoverPresentationController?.sourceView = txtUsername
+            alert.popoverPresentationController?.sourceRect = txtUsername.bounds
+            self.present(alert, animated: true, completion: nil)
+        }else if password == ""{
+            alert.message = "Enter the password"
+            alert.popoverPresentationController?.sourceView = txtPassword
+            alert.popoverPresentationController?.sourceRect = txtPassword.bounds
             
+            self.present(alert, animated: true, completion: nil)
+        }else{
+            UIApplication.shared.isNetworkActivityIndicatorVisible = true
+            activityIndicator.startAnimating()
+            
+            let url = "https://api.invupos.com/invuApiPos/index.php?r=site/ApiLogin"
+            let passwordSHA1 = self.passwordToSha1(password: password)
+            let parameters : [String: String] = [
+                "username": userName,
+                "password": passwordSHA1
+            ]
+            
+            Alamofire.request(
+                url,
+                method: .post,
+                parameters: parameters,
+                encoding: URLEncoding.default,
+                headers: nil)
+                .responseJSON() { response in
+                    switch response.result {
+                        
+                    case .success:
+                        UIApplication.shared.isNetworkActivityIndicatorVisible = false
+                        self.activityIndicator.stopAnimating()
+                        
+                        let json = JSON(response.result.value!)
+                        
+                        self.session = Session(
+                            id: json["data"]["id"].intValue,
+                            username: json["data"]["username"].stringValue,
+                            apikey: json["data"][self.APIKEY].stringValue,
+                            shopname: json["data"]["nombre_negocio"].stringValue,
+                            franchisename: json["data"]["nombreFranquicia"].stringValue,
+                            urlimages: json["data"]["urlImagenes"].stringValue
+                        )
+                        
+                        self.getCashRegister()
+                        
+                    case .failure( _):
+                        let alert = UIAlertController(title: "Login Error", message: "Invalid credentials", preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.cancel, handler: nil))
+                        self.present(alert, animated: true, completion: nil)
+                        
+                        print("")
+//                        print(error)
+                        UIApplication.shared.isNetworkActivityIndicatorVisible = false
+                        self.activityIndicator.stopAnimating()
+                    }
+                    
+            }
         }
         
     }
@@ -180,10 +195,35 @@ class LoginController: UIViewController {
     
     
     func setCashRegister(caja: CashRegister) {
+        UIApplication.shared.isNetworkActivityIndicatorVisible = true
+        
 //        print("selecciono \(caja.name)")
-        UserDefaults.standard.set(self.strAPIKEY, forKey: self.APIKEY)
+        UserDefaults.standard.set(self.session.apiKey, forKey: self.APIKEY)
         UserDefaults.standard.set(caja.id, forKey: "cashRegisterID")
         UserDefaults.standard.set(self.session.shopName, forKey: "shopName")
+        
+        let urlConfig = "https://api.invupos.com/invuApiPos/index.php?r=configuraciones"
+        Alamofire.request(urlConfig).responseJSON { response in
+            
+            switch response.result {
+                case .success:
+                    let json = JSON(response.result.value!)
+                    if json.count > 0 {
+                        let config = json["data"]
+                        self.session.logoName = config["logo"].stringValue
+                        UserDefaults.standard.set(self.session.urlImages+self.session.logoName, forKey: "pathLogo")
+//                        print(config) // serialized json response
+                    }
+                case .failure(let error):
+                    print(error)
+                    UIApplication.shared.isNetworkActivityIndicatorVisible = false
+            }
+        }
+        
+        
+        self.txtUsername.text = ""
+        self.txtPassword.text = ""
+        
         self.performSegue(withIdentifier: "segue1", sender: self)
     }
     
