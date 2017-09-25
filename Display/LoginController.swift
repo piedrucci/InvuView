@@ -20,6 +20,7 @@ class LoginController: UIViewController {
     @IBOutlet weak var txtPassword: UITextField!
     @IBOutlet weak var button: UIButton!
     @IBOutlet weak var logoImage: UIImageView!
+    @IBOutlet weak var containerLogin: UIView!
     
     var activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView()
     
@@ -29,6 +30,8 @@ class LoginController: UIViewController {
     var validCashRegisterInfo: Bool = false
     
     var session: Session!
+    
+    var showingKey : Bool! = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,29 +47,17 @@ class LoginController: UIViewController {
         
     }
     override func viewDidAppear(_ animated: Bool) {
-        
-//        if let apiKey = UserDefaults.standard.string(forKey: self.APIKEY) {
-//            self.validCashRegisterInfo = true
-//            print("the default APIKEY is \(apiKey)")
-//        }else{
-//            self.validCashRegisterInfo = false
-//            print("no default apiKey set ")
-//        }
-//        
-//        if let defaultCashRegisterID = UserDefaults.standard.string(forKey: "cashRegisterID") {
-//            self.validCashRegisterInfo = true
-//            print("the default cash register ID is \(defaultCashRegisterID)")
-//        }else{
-//            self.validCashRegisterInfo = false
-//            print("no default cash register ID set ")
-//        }
-        
         super.viewDidAppear(animated)
-        
+        NotificationCenter.default.addObserver(self, selector: #selector(LoginController.keyboardShow(sender:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(LoginController.keyboardHide(sender:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
     }
     
     
-    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+    }
     
     
     @IBAction func loginClick(_ sender: Any) {
@@ -143,7 +134,20 @@ class LoginController: UIViewController {
     }
     
     
-    
+    func keyboardShow(sender : Notification){
+        let keyboardSize = sender.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? CGRect
+        if !showingKey{
+            showingKey = true
+            self.view.frame.origin.y -= ( (button.frame.origin.y + button.frame.height) - (self.view.frame.height - keyboardSize!.height))
+
+        }
+        
+    }
+    func keyboardHide(sender : Notification){
+         self.view.frame.origin.y = 0
+        showingKey = false
+        
+    }
     
     //    metodo para cargar las cajas registradoras de la sucursal seleccionada (APIKEY)
     func getCashRegister() -> Void {
@@ -201,6 +205,7 @@ class LoginController: UIViewController {
         UserDefaults.standard.set(self.session.apiKey, forKey: self.APIKEY)
         UserDefaults.standard.set(caja.id, forKey: "cashRegisterID")
         UserDefaults.standard.set(self.session.shopName, forKey: "shopName")
+        UserDefaults.standard.set(caja.name, forKey: "cashRegisterDescription")
         
         let urlConfig = "https://api.invupos.com/invuApiPos/index.php?r=configuraciones"
         Alamofire.request(urlConfig).responseJSON { response in

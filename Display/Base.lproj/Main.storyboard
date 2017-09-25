@@ -317,10 +317,17 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="v01-3G-Ptg">
-                                        <rect key="frame" x="584" y="11" width="381" height="47"/>
+                                        <rect key="frame" x="509" y="11" width="456" height="47"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="36"/>
                                         <color key="textColor" red="0.90394557903329853" green="0.9485607809527683" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1fH-dT-acI">
+                                        <rect key="frame" x="509" y="64" width="211" height="43"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="36"/>
+                                        <color key="textColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
@@ -332,6 +339,7 @@
                     <connections>
                         <outlet property="PaymentTableView" destination="yCN-Sb-XSH" id="6oI-cW-NWE"/>
                         <outlet property="btnLogout" destination="rrs-Ah-Ave" id="Whc-A2-Ksa"/>
+                        <outlet property="lblCashRegisterName" destination="1fH-dT-acI" id="9jt-qW-DPY"/>
                         <outlet property="lblComment" destination="4kg-Yg-e1B" id="ocr-4c-9BA"/>
                         <outlet property="lblCustomer" destination="z5W-i7-uWd" id="Wn1-ES-K5f"/>
                         <outlet property="lblDiscount" destination="W4Q-ch-ymG" id="Uf9-9w-7Wc"/>
@@ -422,6 +430,7 @@
                     </view>
                     <connections>
                         <outlet property="button" destination="UBC-pc-gzt" id="Qs9-Bi-1Tk"/>
+                        <outlet property="containerLogin" destination="Ysq-et-kyP" id="XQz-9P-D5X"/>
                         <outlet property="logoImage" destination="B0L-Jy-Ex0" id="iVi-a8-ma6"/>
                         <outlet property="txtPassword" destination="8hf-vU-92c" id="itR-Ns-SIN"/>
                         <outlet property="txtUsername" destination="oui-d6-lGk" id="GMq-TW-Le4"/>

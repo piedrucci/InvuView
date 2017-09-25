@@ -24,6 +24,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     @IBOutlet weak var lblPaid: UILabel!
     @IBOutlet weak var lblDiscount: UILabel!
     @IBOutlet weak var lblShopName: UILabel!
+    @IBOutlet weak var lblCashRegisterName: UILabel!
     
     
     @IBOutlet var mainView: UIView!
@@ -43,8 +44,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     var numItems = -1
     
-    
     private var timer: Timer?
+    var showOrder: Bool = false
     
 
     
@@ -66,7 +67,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         viewPayment.isHidden = true
         lblComment.isHidden = true
         
-        toggleVisible(sw: false)
+        self.showOrder = UserDefaults.standard.bool(forKey: "showLastOrder")
+        toggleVisible(sw: self.showOrder)
         //self.tableView.rowHeight = UITableViewAutomaticDimension
         //self.tableView.estimatedRowHeight = 72
         fetchData()
@@ -75,6 +77,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         tableView.tableFooterView = UIView()
         
         lblShopName.text = UserDefaults.standard.string(forKey: "shopName")
+        lblCashRegisterName.text = UserDefaults.standard.string(forKey: "cashRegisterDescription")
     }
     
 //    metodo para mostrar el menu de seleccion de la caja que se desea obtener la ultima orden
@@ -141,7 +144,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             let item: Item = data[indexPath.row]
             customCell.cellCant.text = String(item.quantity)
             customCell.cellDescripcion.text = item.description
-            customCell.cellAmount.text = "$"+String(format: "%.02f", item.price)
+            customCell.cellAmount.text = "$"+String(format: "%.02f", (item.amountItem + item.amountModifiers) )
             
             
             var modifierDescription: String = ""
@@ -197,23 +200,27 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         toggleActivityIdicator(animate: true)
         
         let cashRegisterID = UserDefaults.standard.integer(forKey: "cashRegisterID")
-        //orderTimer.invalidate()
-        let url = api.endPoint + "citas/newOrdenCaja/id/"+String(cashRegisterID)
-//        let url = api.endPoint + "citas/view/id/68304"
         
-        let headers: HTTPHeaders = ["APIKEY": UserDefaults.standard.string(forKey: "APIKEY")!]
-        
-        Alamofire.request(url, headers: headers).responseData().then
-            { json in
-                self.loadEntity(json: json)
-            }.catch { error in
-                let alertError = UIAlertController(title: "Invu Display", message: "Error getting data", preferredStyle: .alert)
-                alertError.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
-                self.present(alertError, animated: true, completion: nil)
-//                print(error)
-                self.toggleActivityIdicator(animate: false)
-                self.btnMenu(self.btnLogout)
+        if cashRegisterID > 0 {
+            //orderTimer.invalidate()
+            let url = api.endPoint + "citas/newOrdenCaja/id/"+String(cashRegisterID)
+            //        let url = api.endPoint + "citas/view/id/68304"
+            
+            let headers: HTTPHeaders = ["APIKEY": UserDefaults.standard.string(forKey: "APIKEY") ?? ""]
+            
+            Alamofire.request(url, headers: headers).responseData().then
+                { json in
+                    self.loadEntity(json: json)
+                }.catch { error in
+                    let alertError = UIAlertController(title: "Invu Display", message: "Error getting data", preferredStyle: .alert)
+                    alertError.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+                    self.present(alertError, animated: true, completion: nil)
+                    //                print(error)
+                    self.toggleActivityIdicator(animate: false)
+                    self.btnMenu(self.btnLogout)
             }
+        }
+        
         
 //        Alamofire.request(url, headers: headers).validate()
 //            .responseObject { (response: DataResponse<SalesCheck>) in
@@ -247,6 +254,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 //            }
 
         }
+    
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         self.timer?.invalidate()
@@ -257,17 +265,22 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 //    metodo para parsear todo el JSON devuelto por el request Alamofire
     func loadEntity(json: Data) {
         let json = JSON( data: json )
-       timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(ViewController.fetchData(sender:)), userInfo: nil, repeats: false)
-        if (json["encontro"].bool!){
+        
+        timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(ViewController.fetchData(sender:)), userInfo: nil, repeats: false)
+        
+        if (json["encontro"].boolValue){
             
 //            if json["status"]["descripcion"].string! == "Cerrada" {
-                toggleVisible(sw: true)
+            self.showOrder = UserDefaults.standard.bool(forKey: "showLastOrder")
+            
+              
+                toggleVisible(sw: self.showOrder)
                 
                 let invoice = Invoice(
-                    id           : Int(json["id"].string!)!,
-                    invoiceSerial: json["num_cita"].string!,
-                    success      : json["encontro"].bool!,
-                    comment      : json["comentario"].string!
+                    id           : Int(json["id"].stringValue)!,
+                    invoiceSerial: json["num_cita"].stringValue,
+                    success      : json["encontro"].boolValue,
+                    comment      : json["comentario"].stringValue
                 )
             
             
@@ -277,16 +290,19 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             
                 // datos del status
                 invoice.status = Status(
-                    id: Int(json["status"]["id"].string!)!,
-                    description: json["status"]["descripcion"].string!
+                    id: Int(json["status"]["id"].stringValue)!,
+                    description: json["status"]["descripcion"].stringValue
                 )
                 
-                // parsear los ITEMS con sus respectivo MODIFICADORES en la factura
+                // parsear los ITEMS con sus respectivos MODIFICADORES en la factura
                 let items:Array<Item> = json["items"].arrayValue.map {
                     
+                    var acum: Double = 0.0
                     let arrayModifiers = $0["modificadores"].arrayValue
                     let modifiers:Array<Modifier> = arrayModifiers.map{
-                        Modifier(
+                        
+                        acum = acum + ($0["cantidad"].doubleValue * $0["costo"].doubleValue)
+                        return  Modifier(
                             id: $0["id"].intValue,
                             quant: $0["cantidad"].intValue,
                             price: $0["costo"].doubleValue,
@@ -294,13 +310,19 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         )
                     }
                     
+                    // calcular el subtotal ITEMS
+//                    let totalModif = invoice.items.reduce(0.0, { acum, currentItem in
+//                        acum + currentItem.amountItem
+//                    })
+                    
                     return Item(
-                        id         : $0["item"]["id"].int!,
-                        price      : $0["item"]["precio"].double!,
-                        description: $0["item"]["nombre"].string!,
-                        tax        : $0["item"]["tax"].double!,
-                        quant      : $0["cantidad"].int!,
-                        modifiers  : modifiers
+                        id         : $0["item"]["id"].intValue,
+                        price      : $0["item"]["precio"].doubleValue,
+                        description: $0["item"]["nombre"].stringValue,
+                        tax        : $0["item"]["tax"].doubleValue,
+                        quant      : $0["cantidad"].intValue,
+                        modifiers  : modifiers,
+                        amountMod: acum
                     )
                 }
                 invoice.items = items
@@ -314,18 +336,18 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 // parsear los PAGOS en la factura
                 let payments: Array<Payment> = json["pagos"].arrayValue.map {
                     Payment(
-                        id    : $0["pago"]["tipo"].int!,
-                        name  : $0["pago"]["nombre"].string!,
-                        amount: Double($0["monto"].string!)!
+                        id    : $0["pago"]["tipo"].intValue,
+                        name  : $0["pago"]["nombre"].stringValue,
+                        amount: Double($0["monto"].stringValue)!
                     )
                 }
                 invoice.payments = payments
                 
                 // datos del empleado
                 invoice.employee = Employee(
-                    id: Int(json["empleado"]["id"].string!)!,
-                    name: json["empleado"]["nombres"].string!,
-                    lastName: json["empleado"]["apellidos"].string!
+                    id: Int(json["empleado"]["id"].stringValue)!,
+                    name: json["empleado"]["nombres"].stringValue,
+                    lastName: json["empleado"]["apellidos"].stringValue
                 )
                 
                 
@@ -333,11 +355,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 let customerID = Int(String(describing: json["cliente"]["id"].object))
                 if ( customerID! != 0 ) {
                     invoice.customer = Customer(
-                        id: Int(json["cliente"]["id"].string!)!,
-                        ruc: json["cliente"]["ruc"].string!,
-                        name: json["cliente"]["nombres"].string!,
-                        lastName: json["cliente"]["apellidos"].string!,
-                        dob: json["cliente"]["fecha_nacimiento"].string!,
+                        id: Int(json["cliente"]["id"].stringValue)!,
+                        ruc: json["cliente"]["ruc"].stringValue,
+                        name: json["cliente"]["nombres"].stringValue,
+                        lastName: json["cliente"]["apellidos"].stringValue,
+                        dob: json["cliente"]["fecha_nacimiento"].stringValue,
                         phone: ""
                     )
                 }
@@ -346,13 +368,15 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 // datos del DESCUENTO
                 if (json["descuento"] != JSON.null) {
                     invoice.discount = Discount(
-                        id: json["descuento"]["id"].int!,
-                        description: json["descuento"]["descripcion"].string!,
-                        value: Double(json["descuento"]["valor"].string!)!,
-                        type: json["descuento"]["tipo"].string!
+                        id: json["descuento"]["id"].intValue,
+                        description: json["descuento"]["descripcion"].stringValue,
+                        value: Double(json["descuento"]["valor"].stringValue)!,
+                        type: json["descuento"]["tipo"].stringValue
                     )
                 }
-                
+            
+            
+            
                 
                 // imprimir los resultados
                 if (invoice.success) {
@@ -362,7 +386,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     
                     // calcular el subtotal ITEMS
                     let subtotal = invoice.items.reduce(0.0, { acum, currentItem in
-                        acum + currentItem.amountItem
+                        acum + (currentItem.amountItem + currentItem.amountModifiers)
                     })
                     lblSubtotal.text = "$"+String(format: "%.02f", subtotal)
                     
@@ -400,36 +424,42 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     data = invoice.items
                     paymentsData = invoice.payments
                     
-                    //            ============================================================================
-                    //            ocultar la orden luego de 30 segundos
-//                                    if invoice.id == lastId && items.count == numItems {
-//                                        count = count + 1
-//                                        if count > 4{
-//                                            self.tableView.isHidden = true
-//                                            self.viewTotal.isHidden = true
-//                                        }
-//                                    }else{
-//                                        count = 0
-//                                        lastId = invoice.id
-//                                        self.tableView.isHidden = false
-//                                        self.viewTotal.isHidden = false
-//                                    }
                     
-                                    numItems = items.count
-                    //            ============================================================================
+                    
+//            ============================================================================
+//            ocultar la orden luego de N segundos
+                    if invoice.id == lastId && items.count == numItems && invoice.status.description == "Cerrada"{
+                        count = count + 1
+                        if count > 4{
+                            self.tableView.isHidden = true
+                            self.viewTotal.isHidden = true
+                            UserDefaults.standard.set(false, forKey: "showLastOrder")
+                        }
+                    }else{
+                        UserDefaults.standard.set(true, forKey: "showLastOrder")
+                        count = 0
+                        lastId = invoice.id
+                        self.tableView.isHidden = false
+                        self.viewTotal.isHidden = false
+                    }
+                    
+                    numItems = items.count
+//            ============================================================================
+                    
+                    
 
                     
                     tableView.reloadData()
                     PaymentTableView.reloadData()
                 
                 }
-            
+
 //            } else {
 //                toggleVisible(sw: false)
 //            }
             
         } else {
-            print(json["msg"].string!)
+            print(json["msg"].stringValue)
         }
         
         toggleActivityIdicator(animate: false)
