@@ -35,8 +35,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     @IBOutlet weak var shopLogo: UIImageView!
     
-    var count = 0
-    
     var lastId = -1
     
     var data: Array<Item> = []
@@ -45,9 +43,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     var numItems = -1
     
     private var timer: Timer?
-    var showOrder: Bool = false
     
-
     
     
     
@@ -67,11 +63,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         viewPayment.isHidden = true
         lblComment.isHidden = true
         
-        self.showOrder = UserDefaults.standard.bool(forKey: "showLastOrder")
-        toggleVisible(sw: self.showOrder)
+        toggleVisible(sw: false)
         //self.tableView.rowHeight = UITableViewAutomaticDimension
         //self.tableView.estimatedRowHeight = 72
-        fetchData()
+        self.fetchData()
         
 //        eliminar las rayas despues del ultimo elemento del tableview
         tableView.tableFooterView = UIView()
@@ -271,20 +266,14 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         if (json["encontro"].boolValue){
             
 //            if json["status"]["descripcion"].string! == "Cerrada" {
-            self.showOrder = UserDefaults.standard.bool(forKey: "showLastOrder")
             
-              
-                toggleVisible(sw: self.showOrder)
-                
+            
                 let invoice = Invoice(
                     id           : Int(json["id"].stringValue)!,
                     invoiceSerial: json["num_cita"].stringValue,
                     success      : json["encontro"].boolValue,
                     comment      : json["comentario"].stringValue
                 )
-            
-            
-            
             
             
             
@@ -398,19 +387,34 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     
                     
                     // calcular el total
-                    var total = subtotal + taxes
+                    var total = subtotal
                     
                     
                     // mostrar el total DESCUENTO
                     var totalDiscount = 0.0
                     if invoice.discount.value>0 {
-                        totalDiscount = (invoice.discount.value * total)/100
+                        
+                        
+                        switch invoice.discount.type {
+                            case "PORCENTAGE":
+                                totalDiscount = (invoice.discount.value * total)/100
+                                 lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
+                            break
+                            case "VALOR":
+                                totalDiscount = invoice.discount.value
+                                 lblStrDiscount.text = "Discount "
+                            break
+                        default:
+                            totalDiscount = (invoice.discount.value * total)/100
+                            break
+                        
+                        }
                         total = total - totalDiscount
-                        lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
+//                        lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
                     }
                     lblDiscount.text = "$"+String(format: "%.02f", totalDiscount)
-                    
-                    
+                    total += taxes
+                
                     // mostrar el TOTAL
                     lblTotal.text = "$"+String(format: "%.02f", total)
                     
@@ -425,27 +429,22 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     paymentsData = invoice.payments
                     
                     
-                    
 //            ============================================================================
 //            ocultar la orden luego de N segundos
-                    if invoice.id == lastId && items.count == numItems && invoice.status.description == "Cerrada"{
-                        count = count + 1
-                        if count > 4{
-                            self.tableView.isHidden = true
-                            self.viewTotal.isHidden = true
-                            UserDefaults.standard.set(false, forKey: "showLastOrder")
-                        }
+                    if invoice.status.description == "Cerrada" && self.lastId == invoice.id{
+                        self.tableView.isHidden = true
+                        self.lblSubtotal.text = "$0.00"
+                        self.lblTax.text = "$0.00"
+                        self.lblDiscount.text = "$0.00"
+                        self.lblTotal.text = "$0.00"
+                        self.lblPaid.text = "$0.00"
                     }else{
-                        UserDefaults.standard.set(true, forKey: "showLastOrder")
-                        count = 0
-                        lastId = invoice.id
+                        self.lastId = invoice.id
                         self.tableView.isHidden = false
-                        self.viewTotal.isHidden = false
                     }
                     
                     numItems = items.count
 //            ============================================================================
-                    
                     
 
                     
@@ -480,10 +479,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
 //    mostrar / ocultar los objetos en la pantalla
     func toggleVisible(sw: Bool){
-        tableView.isHidden = !sw
-        PaymentTableView.isHidden = !sw
+        self.tableView.isHidden = !sw
+//        self.viewTotal.isHidden = !sw
+        self.PaymentTableView.isHidden = !sw
     }
-    
     
 
 }

@@ -32,7 +32,7 @@ class Item {
         self.quantity = quant
         
         self.amountItem = price * Double(quant)
-        self.amountTax  = (tax * price) / 100
+        self.amountTax  = (tax * self.amountItem) / 100
         
         self.itemModifiers = modifiers
         self.amountModifiers = amountMod

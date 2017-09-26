@@ -29,7 +29,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         var defaultCashRegisterID: String? = UserDefaults.standard.string(forKey: "cashRegisterID")
         defaultCashRegisterID = (defaultCashRegisterID?.trimmingCharacters(in: CharacterSet.whitespaces))
         
-        
+                
         self.validCashRegisterInfo = ( apiKey != nil ? apiKey!.characters.count > 0 : false)
         
         if self.validCashRegisterInfo {
@@ -38,7 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         if self.validCashRegisterInfo {
             print("Configuracion de caja encontrada!")
-            print("la \(self.APIKEY) es \(apiKey ?? "No hay") y el ID de Caja es \(defaultCashRegisterID ?? "No hay")")
+            print("la \(self.APIKEY) es \(apiKey ?? "No hay") y el ID de Caja es \(defaultCashRegisterID ?? "No hay") ")
             
             let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
             let controller = storyboard.instantiateViewController(withIdentifier: "viewcontroller")
