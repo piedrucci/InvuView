@@ -311,7 +311,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         tax        : $0["item"]["tax"].doubleValue,
                         quant      : $0["cantidad"].intValue,
                         modifiers  : modifiers,
-                        amountMod: acum
+                        amountMod  : acum
                     )
                 }
                 invoice.items = items
@@ -380,14 +380,14 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     lblSubtotal.text = "$"+String(format: "%.02f", subtotal)
                     
                     // calcular el subtotal TAXS
-                    let taxes = invoice.items.reduce(0.0, { acum, currentItem in
+                    var taxes = invoice.items.reduce(0.0, { acum, currentItem in
                         acum + currentItem.amountTax
                     })
                     lblTax.text = "$"+String(format: "%.02f", taxes)
                     
                     
                     // calcular el total
-                    var total = subtotal
+                    var acumTotal = subtotal
                     
                     
                     // mostrar el total DESCUENTO
@@ -396,27 +396,51 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         
                         
                         switch invoice.discount.type {
-                            case "PORCENTAGE":
-                                totalDiscount = (invoice.discount.value * total)/100
-                                 lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
-                            break
+//                            case "PORCENTAGE":
+//                                totalDiscount = (invoice.discount.value * acumTotal)/100
+//                                lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
+//                                let auxAcumTotal = acumTotal
+//                                acumTotal -= totalDiscount
+//                                
+//                                taxes = (acumTotal * taxes) / auxAcumTotal
+//                                lblTax.text = "$"+String(format: "%.02f", taxes)
+//                            break
                             case "VALOR":
                                 totalDiscount = invoice.discount.value
-                                 lblStrDiscount.text = "Discount "
+                                lblStrDiscount.text = "Discount " + invoice.discount.description
+                                acumTotal -= totalDiscount
+                            break
+                            case "LIBRE ($)":
+                                totalDiscount = invoice.discount.value
+                                lblStrDiscount.text = invoice.discount.description
+                                acumTotal -= totalDiscount
+                                taxes = (acumTotal * taxes) / acumTotal
+                                lblTax.text = "$"+String(format: "%.02f", taxes)
                             break
                         default:
-                            totalDiscount = (invoice.discount.value * total)/100
+                            totalDiscount = (invoice.discount.value * acumTotal)/100
+                            lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
+                            let auxAcumTotal = acumTotal
+                            acumTotal -= totalDiscount
+                            
+                            taxes = (acumTotal * taxes) / auxAcumTotal
+                            lblTax.text = "$"+String(format: "%.02f", taxes)
                             break
                         
                         }
-                        total = total - totalDiscount
+//                        acumTotal -= totalDiscount
 //                        lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
                     }
                     lblDiscount.text = "$"+String(format: "%.02f", totalDiscount)
-                    total += taxes
+                    acumTotal += taxes
+                    
+                    
+                    
+                    
+                    
                 
                     // mostrar el TOTAL
-                    lblTotal.text = "$"+String(format: "%.02f", total)
+                    lblTotal.text = "$"+String(format: "%.02f", acumTotal)
                     
                     // calcular el total en PAGOS
                     let paid = invoice.payments.reduce(0.0, { acum, currentPayment in
