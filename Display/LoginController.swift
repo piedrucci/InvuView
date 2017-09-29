@@ -62,6 +62,8 @@ class LoginController: UIViewController {
     
     @IBAction func loginClick(_ sender: Any) {
         
+        UserDefaults.standard.removeObject(forKey: "pathLogo")
+        
         let userName: String = (txtUsername.text?.trimmingCharacters(in: CharacterSet.whitespaces))!
         let password: String = (txtPassword.text?.trimmingCharacters(in: CharacterSet.whitespaces))!
         let alert: UIAlertController = UIAlertController(title: "", message: "", preferredStyle: .actionSheet)
@@ -207,8 +209,9 @@ class LoginController: UIViewController {
         UserDefaults.standard.set(self.session.shopName, forKey: "shopName")
         UserDefaults.standard.set(caja.name, forKey: "cashRegisterDescription")
         
+        let headers: HTTPHeaders = ["APIKEY": self.session.apiKey]
         let urlConfig = "https://api.invupos.com/invuApiPos/index.php?r=configuraciones"
-        Alamofire.request(urlConfig).responseJSON { response in
+        Alamofire.request(urlConfig, headers: headers).responseJSON { response in
             
             switch response.result {
                 case .success:

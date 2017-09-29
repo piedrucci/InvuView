@@ -70,7 +70,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
 //        eliminar las rayas despues del ultimo elemento del tableview
         tableView.tableFooterView = UIView()
-        
+        //tableView.rowHeight = UITableViewAutomaticDimension
         lblShopName.text = UserDefaults.standard.string(forKey: "shopName")
         lblCashRegisterName.text = UserDefaults.standard.string(forKey: "cashRegisterDescription")
     }
@@ -83,6 +83,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         UserDefaults.standard.removeObject(forKey: "cashRegisterID")
         UserDefaults.standard.removeObject(forKey: "pathLogo")
         UserDefaults.standard.removeObject(forKey: "shopName")
+        UserDefaults.standard.removeObject(forKey: "pathLogo")
         
         
         let window = (UIApplication.shared.delegate as! AppDelegate).window
@@ -99,7 +100,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+
 //        cargar el logo de la tienda (async)
         let pathLogo: String = UserDefaults.standard.string(forKey: "pathLogo")!
         shopLogo.load.request(with: pathLogo)
@@ -141,6 +142,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             customCell.cellDescripcion.text = item.description
             customCell.cellAmount.text = "$"+String(format: "%.02f", (item.amountItem + item.amountModifiers) )
             
+//            var disStack: UIStackView = UIStackView
+//            let discountDescription: UILabel
+//            
+//            disStack.add
             
             var modifierDescription: String = ""
             if item.modifiers.count > 0 {
@@ -462,6 +467,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         self.lblDiscount.text = "$0.00"
                         self.lblTotal.text = "$0.00"
                         self.lblPaid.text = "$0.00"
+                        self.lblStrDiscount.text = "Discount"
                     }else{
                         self.lastId = invoice.id
                         self.tableView.isHidden = false

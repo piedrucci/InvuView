@@ -10,6 +10,7 @@ class CustomCell: UITableViewCell {
     
     @IBOutlet weak var lblModifier: UILabel!
     
+    @IBOutlet weak var discountStack: UIStackView!
     override func awakeFromNib() {
         super.awakeFromNib()
         lblModifier.text = ""

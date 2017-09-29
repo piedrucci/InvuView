@@ -153,13 +153,13 @@
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="UvO-bX-LlQ">
-                                                            <rect key="frame" x="16" y="8" width="944" height="55.5"/>
+                                                            <rect key="frame" x="16" y="8" width="944" height="56"/>
                                                             <subviews>
                                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="13w-R0-C55">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="944" height="55.5"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="944" height="56"/>
                                                                     <subviews>
                                                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1pm-5K-RTE">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="944" height="55.5"/>
+                                                                            <rect key="frame" x="0.0" y="0.0" width="944" height="56"/>
                                                                             <subviews>
                                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="40" translatesAutoresizingMaskIntoConstraints="NO" id="kRX-fP-5Sp">
                                                                                     <rect key="frame" x="111" y="0.0" width="590" height="36"/>
@@ -205,8 +205,19 @@
                                                                             </constraints>
                                                                         </view>
                                                                     </subviews>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="height" constant="56" id="ZXh-o2-blO"/>
+                                                                    </constraints>
+                                                                </stackView>
+                                                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="eqv-1m-xkg">
+                                                                    <rect key="frame" x="0.0" y="56" width="944" height="0.0"/>
                                                                 </stackView>
                                                             </subviews>
+                                                            <constraints>
+                                                                <constraint firstItem="13w-R0-C55" firstAttribute="top" secondItem="UvO-bX-LlQ" secondAttribute="top" id="SdB-o8-lHf"/>
+                                                                <constraint firstItem="eqv-1m-xkg" firstAttribute="bottom" secondItem="13w-R0-C55" secondAttribute="bottom" id="htw-EN-1xr"/>
+                                                                <constraint firstAttribute="bottom" secondItem="eqv-1m-xkg" secondAttribute="bottom" id="ttD-nH-UmC"/>
+                                                            </constraints>
                                                         </stackView>
                                                     </subviews>
                                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -222,6 +233,7 @@
                                                     <outlet property="cellAmount" destination="xu9-ZC-ddx" id="9RL-Lm-C6w"/>
                                                     <outlet property="cellCant" destination="M8I-Dz-LJ5" id="y4H-67-afY"/>
                                                     <outlet property="cellDescripcion" destination="kRX-fP-5Sp" id="Fbz-Tw-8d6"/>
+                                                    <outlet property="discountStack" destination="eqv-1m-xkg" id="HeM-nb-gkB"/>
                                                     <outlet property="lblModifier" destination="KiA-Uf-WPK" id="VOa-cx-iQy"/>
                                                 </connections>
                                             </tableViewCell>
