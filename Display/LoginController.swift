@@ -10,12 +10,13 @@ import Foundation
 import UIKit
 import Alamofire
 import SwiftyJSON
+import SwiftSocket
 
 class LoginController: UIViewController {
 //    invu: ff9907a80070300578eb65a2137670009e8c17cf
 //    lcaesars: cc8efd32e2b3c695ecf2835a05e5e75053012dab
     
-    
+    static var client: TCPClient!
     @IBOutlet weak var txtUsername: UITextField!
     @IBOutlet weak var txtPassword: UITextField!
     @IBOutlet weak var button: UIButton!
@@ -32,7 +33,7 @@ class LoginController: UIViewController {
     var session: Session!
     
     var showingKey : Bool! = false
-    
+   
     override func viewDidLoad() {
         super.viewDidLoad()
     
@@ -66,7 +67,7 @@ class LoginController: UIViewController {
         
         let userName: String = (txtUsername.text?.trimmingCharacters(in: CharacterSet.whitespaces))!
         let password: String = (txtPassword.text?.trimmingCharacters(in: CharacterSet.whitespaces))!
-        let alert: UIAlertController = UIAlertController(title: "", message: "", preferredStyle: .actionSheet)
+        var alert: UIAlertController = UIAlertController(title: "", message: "", preferredStyle: .actionSheet)
         alert.title = "Login into App"
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         alert.popoverPresentationController?.permittedArrowDirections = .down
@@ -93,44 +94,58 @@ class LoginController: UIViewController {
                 "password": passwordSHA1
             ]
             
-            Alamofire.request(
-                url,
-                method: .post,
-                parameters: parameters,
-                encoding: URLEncoding.default,
-                headers: nil)
-                .responseJSON() { response in
-                    switch response.result {
-                        
-                    case .success:
-                        UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                        self.activityIndicator.stopAnimating()
-                        
-                        let json = JSON(response.result.value!)
-                        
-                        self.session = Session(
-                            id: json["data"]["id"].intValue,
-                            username: json["data"]["username"].stringValue,
-                            apikey: json["data"][self.APIKEY].stringValue,
-                            shopname: json["data"]["nombre_negocio"].stringValue,
-                            franchisename: json["data"]["nombreFranquicia"].stringValue,
-                            urlimages: json["data"]["urlImagenes"].stringValue
-                        )
-                        
-                        self.getCashRegister()
-                        
-                    case .failure( _):
-                        let alert = UIAlertController(title: "Login Error", message: "Invalid credentials", preferredStyle: .alert)
-                        alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.cancel, handler: nil))
-                        self.present(alert, animated: true, completion: nil)
-                        
-                        print("")
-//                        print(error)
-                        UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                        self.activityIndicator.stopAnimating()
-                    }
-                    
+            LoginController.client = TCPClient(address: userName, port: 6000)
+            switch LoginController.client.connect(timeout: 1){
+                case .success:
+                    self.performSegue(withIdentifier: "segue1", sender: self)
+                    break
+            case .failure(let error):
+                print(error)
+                alert = UIAlertController(title: "", message: "", preferredStyle: .alert)
+                alert.title = "Error"
+                alert.message = "Error al conectarse a pos"
+                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+                self.present(alert, animated: true, completion: nil)
+                break
             }
+//            Alamofire.request(
+//                url,
+//                method: .post,
+//                parameters: parameters,
+//                encoding: URLEncoding.default,
+//                headers: nil)
+//                .responseJSON() { response in
+//                    switch response.result {
+//
+//                    case .success:
+//                        UIApplication.shared.isNetworkActivityIndicatorVisible = false
+//                        self.activityIndicator.stopAnimating()
+//
+//                        let json = JSON(response.result.value!)
+//
+//                        self.session = Session(
+//                            id: json["data"]["id"].intValue,
+//                            username: json["data"]["username"].stringValue,
+//                            apikey: json["data"][self.APIKEY].stringValue,
+//                            shopname: json["data"]["nombre_negocio"].stringValue,
+//                            franchisename: json["data"]["nombreFranquicia"].stringValue,
+//                            urlimages: json["data"]["urlImagenes"].stringValue
+//                        )
+//
+//                        self.getCashRegister()
+//
+//                    case .failure( _):
+//                        let alert = UIAlertController(title: "Login Error", message: "Invalid credentials", preferredStyle: .alert)
+//                        alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.cancel, handler: nil))
+//                        self.present(alert, animated: true, completion: nil)
+//
+//                        print("")
+////                        print(error)
+//                        UIApplication.shared.isNetworkActivityIndicatorVisible = false
+//                        self.activityIndicator.stopAnimating()
+//                    }
+//
+//            }
         }
         
     }

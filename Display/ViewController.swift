@@ -63,10 +63,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         viewPayment.isHidden = true
         lblComment.isHidden = true
         
-        toggleVisible(sw: false)
+        toggleVisible(sw: true)
         //self.tableView.rowHeight = UITableViewAutomaticDimension
         //self.tableView.estimatedRowHeight = 72
-        self.fetchData()
+//        self.fetchData()
         
 //        eliminar las rayas despues del ultimo elemento del tableview
         tableView.tableFooterView = UIView()
@@ -102,13 +102,31 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         super.viewDidAppear(animated)
 
 //        cargar el logo de la tienda (async)
-        let pathLogo: String = UserDefaults.standard.string(forKey: "pathLogo")!
-        shopLogo.load.request(with: pathLogo)
+//        let pathLogo: String = UserDefaults.standard.string(forKey: "pathLogo")!
+//        shopLogo.load.request(with: pathLogo)
         
 //        print(self.mainView.backgroundColor ?? "-")
 //        0.937255 0.937255 0.956863 1
+        
+//        let timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(ViewController.listener(sender:)), userInfo: nil, repeats: false)
+        DispatchQueue.global(qos: .background).async {
+            self.listener(sender: nil)
+        }
     }
     
+    func listener(sender : Any!){
+        while true {
+            if let data = LoginController.client.read(1024*10000){
+                if let response = String(bytes: data, encoding: .utf8) {
+                    print(JSON(response))
+                    self.loadEntity(orderData: response.data(using: .utf8)!)
+                    
+                    print("data")
+                }
+                
+            }
+        }
+    }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -210,7 +228,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             
             Alamofire.request(url, headers: headers).responseData().then
                 { json in
-                    self.loadEntity(json: json)
+                    self.loadEntity(orderData: json)
                 }.catch { error in
                     let alertError = UIAlertController(title: "Invu Display", message: "Error getting data", preferredStyle: .alert)
                     alertError.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
@@ -263,31 +281,31 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     
 //    metodo para parsear todo el JSON devuelto por el request Alamofire
-    func loadEntity(json: Data) {
-        let json = JSON( data: json )
+    func loadEntity(orderData: Data) {
+        let json = JSON( data: orderData )
         
-        timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(ViewController.fetchData(sender:)), userInfo: nil, repeats: false)
+        //timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(ViewController.fetchData(sender:)), userInfo: nil, repeats: false)
         
-        if (json["encontro"].boolValue){
-            
+//        if (json["encontro"].boolValue){
+        
 //            if json["status"]["descripcion"].string! == "Cerrada" {
             
             
                 let invoice = Invoice(
-                    id           : Int(json["id"].stringValue)!,
+                    id           : 1,
                     invoiceSerial: json["num_cita"].stringValue,
-                    success      : json["encontro"].boolValue,
+                    success      : true,
                     comment      : json["comentario"].stringValue
                 )
             
             
             
                 // datos del status
-                invoice.status = Status(
-                    id: Int(json["status"]["id"].stringValue)!,
-                    description: json["status"]["descripcion"].stringValue
-                )
-                
+//                invoice.status = Status(
+//                    id: Int(json["status"]["id"].stringValue)!,
+//                    description: json["status"]["descripcion"].stringValue
+//                )
+        
                 // parsear los ITEMS con sus respectivos MODIFICADORES en la factura
                 let items:Array<Item> = json["items"].arrayValue.map {
                     
@@ -304,19 +322,36 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         )
                     }
                     
-                    // calcular el subtotal ITEMS
-//                    let totalModif = invoice.items.reduce(0.0, { acum, currentItem in
-//                        acum + currentItem.amountItem
-//                    })
+                    
+                    var itemDiscount: Discount? = nil
+                    if $0["descuento"] != JSON.null{
+                         itemDiscount = Discount(
+                            porcentaje: $0["descuento"]["isPorcentaje"].boolValue,
+                            description: $0["descuento"]["nombre"].stringValue,
+                            value: $0["descuento"]["monto"].doubleValue,
+                            type: $0["descuento"]["tipo"].stringValue
+                        )
+                        
+                    }
+                    
+                    var descuento = 0.0
+                    let importe = ($0["item"]["precio"].doubleValue * Double($0["cantidad"].intValue)) + acum
+                    if itemDiscount != nil {
+                        if itemDiscount!.porcentaje == true {
+                            descuento = (itemDiscount!.value * importe) / 100
+                        }else{
+                            descuento = itemDiscount!.value                        }
+                    }
                     
                     return Item(
                         id         : $0["item"]["id"].intValue,
-                        price      : $0["item"]["precio"].doubleValue,
+                        price      : $0["item"]["precio"].doubleValue - descuento,
                         description: $0["item"]["nombre"].stringValue,
                         tax        : $0["item"]["tax"].doubleValue,
                         quant      : $0["cantidad"].intValue,
                         modifiers  : modifiers,
-                        amountMod  : acum
+                        amountMod  : acum,
+                        discount: itemDiscount
                     )
                 }
                 invoice.items = items
@@ -338,16 +373,17 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 invoice.payments = payments
                 
                 // datos del empleado
-                invoice.employee = Employee(
-                    id: Int(json["empleado"]["id"].stringValue)!,
-                    name: json["empleado"]["nombres"].stringValue,
-                    lastName: json["empleado"]["apellidos"].stringValue
-                )
+                if json["empleado"] != JSON.null{
+                    invoice.employee = Employee(
+                        id: Int(json["empleado"]["id"].stringValue)!,
+                        name: json["empleado"]["nombres"].stringValue,
+                        lastName: json["empleado"]["apellidos"].stringValue
+                    )
+                }
                 
                 
                 // datos del cliente... si ID == 0 (no tiene cliente la factura)
-                let customerID = Int(String(describing: json["cliente"]["id"].object))
-                if ( customerID! != 0 ) {
+                if json["cliente"] != JSON.null{
                     invoice.customer = Customer(
                         id: Int(json["cliente"]["id"].stringValue)!,
                         ruc: json["cliente"]["ruc"].stringValue,
@@ -357,139 +393,152 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         phone: ""
                     )
                 }
-                
+    
                 
                 // datos del DESCUENTO
                 if (json["descuento"] != JSON.null) {
                     invoice.discount = Discount(
-                        id: json["descuento"]["id"].intValue,
-                        description: json["descuento"]["descripcion"].stringValue,
-                        value: Double(json["descuento"]["valor"].stringValue)!,
+                        porcentaje: json["descuento"]["isPorcentaje"].boolValue,
+                        description: json["descuento"]["nombre"].stringValue,
+                        value: Double(json["descuento"]["monto"].stringValue)!,
                         type: json["descuento"]["tipo"].stringValue
                     )
                 }
             
             
-            
+        
+        
+        
+        
+        
+        
+        
+        
                 
-                // imprimir los resultados
-                if (invoice.success) {
-//                    lblSerial.text = invoice.invoiceSerial
-//                    lblEmployee.text = invoice.employee.fullName
-//                    lblCustomer.text = invoice.customer.fullName
-                    
-                    // calcular el subtotal ITEMS
-                    let subtotal = invoice.items.reduce(0.0, { acum, currentItem in
-                        acum + (currentItem.amountItem + currentItem.amountModifiers)
-                    })
-                    lblSubtotal.text = "$"+String(format: "%.02f", subtotal)
-                    
-                    // calcular el subtotal TAXS
-                    var taxes = invoice.items.reduce(0.0, { acum, currentItem in
-                        acum + currentItem.amountTax
-                    })
-                    lblTax.text = "$"+String(format: "%.02f", taxes)
-                    
-                    
-                    // calcular el total
-                    var acumTotal = subtotal
-                    
-                    
-                    // mostrar el total DESCUENTO
-                    var totalDiscount = 0.0
-                    if invoice.discount.value>0 {
+                // imprimir los resultados   ================================================================================================
+                DispatchQueue.main.async {
+                    if (invoice.success) {
+                        //                    lblSerial.text = invoice.invoiceSerial
+                        //                    lblEmployee.text = invoice.employee.fullName
+                        //                    lblCustomer.text = invoice.customer.fullName
+                        
+                        // calcular el subtotal ITEMS
+                        let subtotal = invoice.items.reduce(0.0, { acum, currentItem in
+//                            var totalDiscount = 0.0
+//                            let itemWithMod = acum + (currentItem.amountItem + currentItem.amountModifiers)
+//                            return (itemWithMod - totalDiscount)
+                            acum + currentItem.amountItem + currentItem.amountModifiers
+                        })
+                        self.lblSubtotal.text = "$"+String(format: "%.02f", subtotal)
+                        
+                        // calcular el subtotal TAXS
+                        var taxes = invoice.items.reduce(0.0, { acum, currentItem in
+                            acum + currentItem.amountTax
+                        })
+                        self.lblTax.text = "$"+String(format: "%.02f", taxes)
                         
                         
-                        switch invoice.discount.type {
-//                            case "PORCENTAGE":
-//                                totalDiscount = (invoice.discount.value * acumTotal)/100
-//                                lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
-//                                let auxAcumTotal = acumTotal
-//                                acumTotal -= totalDiscount
-//                                
-//                                taxes = (acumTotal * taxes) / auxAcumTotal
-//                                lblTax.text = "$"+String(format: "%.02f", taxes)
-//                            break
+                        // calcular el total
+                        var acumTotal = subtotal
+                        
+                        
+                        // mostrar el total DESCUENTO
+                        var totalDiscount = 0.0
+                        if invoice.discount.value>0 {
+                            
+                            
+                            switch invoice.discount.type {
+                                //                            case "PORCENTAGE":
+                                //                                totalDiscount = (invoice.discount.value * acumTotal)/100
+                                //                                lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
+                                //                                let auxAcumTotal = acumTotal
+                                //                                acumTotal -= totalDiscount
+                                //
+                                //                                taxes = (acumTotal * taxes) / auxAcumTotal
+                                //                                lblTax.text = "$"+String(format: "%.02f", taxes)
+                            //                            break
                             case "VALOR":
                                 totalDiscount = invoice.discount.value
-                                lblStrDiscount.text = "Discount " + invoice.discount.description
+                                self.lblStrDiscount.text = "Discount " + invoice.discount.description
                                 acumTotal -= totalDiscount
-                            break
+                                break
                             case "LIBRE ($)":
                                 totalDiscount = invoice.discount.value
-                                lblStrDiscount.text = invoice.discount.description
+                                self.lblStrDiscount.text = invoice.discount.description
                                 acumTotal -= totalDiscount
                                 taxes = (acumTotal * taxes) / acumTotal
-                                lblTax.text = "$"+String(format: "%.02f", taxes)
-                            break
-                        default:
-                            totalDiscount = (invoice.discount.value * acumTotal)/100
-                            lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
-                            let auxAcumTotal = acumTotal
-                            acumTotal -= totalDiscount
-                            
-                            taxes = (acumTotal * taxes) / auxAcumTotal
-                            lblTax.text = "$"+String(format: "%.02f", taxes)
-                            break
-                        
+                                self.lblTax.text = "$"+String(format: "%.02f", taxes)
+                                break
+                            default:
+                                totalDiscount = (invoice.discount.value * acumTotal)/100
+                                self.lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
+                                let auxAcumTotal = acumTotal
+                                acumTotal -= totalDiscount
+                                
+                                taxes = (acumTotal * taxes) / auxAcumTotal
+                                self.lblTax.text = "$"+String(format: "%.02f", taxes)
+                                break
+                                
+                            }
+                            //                        acumTotal -= totalDiscount
+                            //                        lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
                         }
-//                        acumTotal -= totalDiscount
-//                        lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
+                        self.lblDiscount.text = "$"+String(format: "%.02f", totalDiscount)
+                        acumTotal += taxes
+                        
+                        
+                        
+                        
+                        
+                        
+                        // mostrar el TOTAL
+                        self.lblTotal.text = "$"+String(format: "%.02f", acumTotal)
+                        
+                        // calcular el total en PAGOS
+                        let paid = invoice.payments.reduce(0.0, { acum, currentPayment in
+                            acum + currentPayment.amount
+                        })
+                        self.lblPaid.text = "$"+String(format: "%.02f", paid)
+                        
+                        
+                        self.data = invoice.items
+                        self.paymentsData = invoice.payments
+                        
+                        
+                        //            ============================================================================
+                        //            ocultar la orden luego de N segundos
+                        //                    if invoice.status.description == "Cerrada" && self.lastId == invoice.id{
+                        //                        self.tableView.isHidden = true
+                        //                        self.lblSubtotal.text = "$0.00"
+                        //                        self.lblTax.text = "$0.00"
+                        //                        self.lblDiscount.text = "$0.00"
+                        //                        self.lblTotal.text = "$0.00"
+                        //                        self.lblPaid.text = "$0.00"
+                        //                        self.lblStrDiscount.text = "Discount"
+                        //                    }else{
+                        //                        self.lastId = invoice.id
+                        //                        self.tableView.isHidden = false
+                        //                    }
+                        
+                        self.numItems = items.count
+                        //            ============================================================================
+                        
+                        
+                        
+                        self.tableView.reloadData()
+                        self.PaymentTableView.reloadData()
+                        
                     }
-                    lblDiscount.text = "$"+String(format: "%.02f", totalDiscount)
-                    acumTotal += taxes
-                    
-                    
-                    
-                    
-                    
-                
-                    // mostrar el TOTAL
-                    lblTotal.text = "$"+String(format: "%.02f", acumTotal)
-                    
-                    // calcular el total en PAGOS
-                    let paid = invoice.payments.reduce(0.0, { acum, currentPayment in
-                        acum + currentPayment.amount
-                    })
-                    lblPaid.text = "$"+String(format: "%.02f", paid)
-                    
-                    
-                    data = invoice.items
-                    paymentsData = invoice.payments
-                    
-                    
-//            ============================================================================
-//            ocultar la orden luego de N segundos
-                    if invoice.status.description == "Cerrada" && self.lastId == invoice.id{
-                        self.tableView.isHidden = true
-                        self.lblSubtotal.text = "$0.00"
-                        self.lblTax.text = "$0.00"
-                        self.lblDiscount.text = "$0.00"
-                        self.lblTotal.text = "$0.00"
-                        self.lblPaid.text = "$0.00"
-                        self.lblStrDiscount.text = "Discount"
-                    }else{
-                        self.lastId = invoice.id
-                        self.tableView.isHidden = false
-                    }
-                    
-                    numItems = items.count
-//            ============================================================================
-                    
-
-                    
-                    tableView.reloadData()
-                    PaymentTableView.reloadData()
-                
                 }
+        
 
 //            } else {
 //                toggleVisible(sw: false)
 //            }
             
-        } else {
-            print(json["msg"].stringValue)
-        }
+//        } else {
+//            print(json["msg"].stringValue)
+//        }
         
         toggleActivityIdicator(animate: false)
         

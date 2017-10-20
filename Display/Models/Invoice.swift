@@ -79,7 +79,7 @@ class Invoice {
             phone: "" )
         
         // inicializar el DESCUENTO vacio
-        self.invoiceDiscount = Discount(id: 0, description: "", value: 0.0, type: "")
+        self.invoiceDiscount = Discount(porcentaje: false, description: "", value: 0.0, type: "")
     }
     
 }

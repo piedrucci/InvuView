@@ -13,6 +13,7 @@ target 'Display' do
   pod 'SwiftyJSON'
   pod 'AlamofireImage', '~> 3.3'
   pod 'ImageLoader'#, '~> 0.12'
+  pod 'SwiftSocket'
 
   # Pods for Display
 
