@@ -306,14 +306,30 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 //                    description: json["status"]["descripcion"].stringValue
 //                )
         
+        
+        
+                // datos del DESCUENTO
+                if (json["descuento"] != JSON.null) {
+                    invoice.discount = Discount(
+                        porcentaje: json["descuento"]["isPorcentaje"].boolValue,
+                        description: json["descuento"]["nombre"].stringValue,
+                        value: Double(json["descuento"]["monto"].stringValue)!,
+                        type: json["descuento"]["tipo"].stringValue
+                    )
+                }
+        
+        
+        
+        
                 // parsear los ITEMS con sus respectivos MODIFICADORES en la factura
                 let items:Array<Item> = json["items"].arrayValue.map {
                     
                     var acum: Double = 0.0
+                    let quantItem = $0["cantidad"].doubleValue
                     let arrayModifiers = $0["modificadores"].arrayValue
                     let modifiers:Array<Modifier> = arrayModifiers.map{
                         
-                        acum = acum + ($0["cantidad"].doubleValue * $0["costo"].doubleValue)
+                        acum = acum + (quantItem * $0["costo"].doubleValue)
                         return  Modifier(
                             id: $0["id"].intValue,
                             quant: $0["cantidad"].intValue,
@@ -343,9 +359,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                             descuento = itemDiscount!.value                        }
                     }
                     
-                    return Item(
+                    let itemPrice = $0["item"]["precio"].doubleValue - descuento
+//                    let itemTax = itemPrice
+                    let curItem = Item(
                         id         : $0["item"]["id"].intValue,
-                        price      : $0["item"]["precio"].doubleValue - descuento,
+                        price      : itemPrice,
                         description: $0["item"]["nombre"].stringValue,
                         tax        : $0["item"]["tax"].doubleValue,
                         quant      : $0["cantidad"].intValue,
@@ -353,6 +371,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         amountMod  : acum,
                         discount: itemDiscount
                     )
+                    return curItem
                 }
                 invoice.items = items
             
@@ -393,23 +412,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         phone: ""
                     )
                 }
-    
-                
-                // datos del DESCUENTO
-                if (json["descuento"] != JSON.null) {
-                    invoice.discount = Discount(
-                        porcentaje: json["descuento"]["isPorcentaje"].boolValue,
-                        description: json["descuento"]["nombre"].stringValue,
-                        value: Double(json["descuento"]["monto"].stringValue)!,
-                        type: json["descuento"]["tipo"].stringValue
-                    )
-                }
-            
-            
-        
-        
-        
-        
         
         
         
@@ -418,17 +420,16 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 // imprimir los resultados   ================================================================================================
                 DispatchQueue.main.async {
                     if (invoice.success) {
-                        //                    lblSerial.text = invoice.invoiceSerial
-                        //                    lblEmployee.text = invoice.employee.fullName
-                        //                    lblCustomer.text = invoice.customer.fullName
                         
                         // calcular el subtotal ITEMS
                         let subtotal = invoice.items.reduce(0.0, { acum, currentItem in
-//                            var totalDiscount = 0.0
-//                            let itemWithMod = acum + (currentItem.amountItem + currentItem.amountModifiers)
-//                            return (itemWithMod - totalDiscount)
-                            acum + currentItem.amountItem + currentItem.amountModifiers
+                            acum + currentItem.amountItem
                         })
+                        let discountPercent = (invoice.discount.porcentaje ? invoice.discount.value  : (invoice.discount.value * 100) / subtotal) / 100
+                       invoice.items.forEach{
+                            
+                            $0.calculateTax(discount: discountPercent)
+                        }
                         self.lblSubtotal.text = "$"+String(format: "%.02f", subtotal)
                         
                         // calcular el subtotal TAXS
@@ -446,30 +447,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         var totalDiscount = 0.0
                         if invoice.discount.value>0 {
                             
-                            
-                            switch invoice.discount.type {
-                                //                            case "PORCENTAGE":
-                                //                                totalDiscount = (invoice.discount.value * acumTotal)/100
-                                //                                lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
-                                //                                let auxAcumTotal = acumTotal
-                                //                                acumTotal -= totalDiscount
-                                //
-                                //                                taxes = (acumTotal * taxes) / auxAcumTotal
-                                //                                lblTax.text = "$"+String(format: "%.02f", taxes)
-                            //                            break
-                            case "VALOR":
-                                totalDiscount = invoice.discount.value
-                                self.lblStrDiscount.text = "Discount " + invoice.discount.description
-                                acumTotal -= totalDiscount
-                                break
-                            case "LIBRE ($)":
-                                totalDiscount = invoice.discount.value
-                                self.lblStrDiscount.text = invoice.discount.description
-                                acumTotal -= totalDiscount
-                                taxes = (acumTotal * taxes) / acumTotal
-                                self.lblTax.text = "$"+String(format: "%.02f", taxes)
-                                break
-                            default:
+                            if invoice.discount.porcentaje{
                                 totalDiscount = (invoice.discount.value * acumTotal)/100
                                 self.lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
                                 let auxAcumTotal = acumTotal
@@ -477,17 +455,17 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                                 
                                 taxes = (acumTotal * taxes) / auxAcumTotal
                                 self.lblTax.text = "$"+String(format: "%.02f", taxes)
-                                break
+                                
+                            }else{
+                                totalDiscount = invoice.discount.value
+                                self.lblStrDiscount.text = "Discount " + invoice.discount.description
+                                acumTotal -= totalDiscount
                                 
                             }
-                            //                        acumTotal -= totalDiscount
-                            //                        lblStrDiscount.text = "Discount (" + String(format: "%.01f", invoice.discount.value) + "%)"
+                            
                         }
                         self.lblDiscount.text = "$"+String(format: "%.02f", totalDiscount)
                         acumTotal += taxes
-                        
-                        
-                        
                         
                         
                         
@@ -521,8 +499,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         //                    }
                         
                         self.numItems = items.count
-                        //            ============================================================================
-                        
                         
                         
                         self.tableView.reloadData()
@@ -530,15 +506,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         
                     }
                 }
-        
-
-//            } else {
-//                toggleVisible(sw: false)
-//            }
-            
-//        } else {
-//            print(json["msg"].stringValue)
-//        }
         
         toggleActivityIdicator(animate: false)
         

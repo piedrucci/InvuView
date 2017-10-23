@@ -33,13 +33,18 @@ class Item {
         self.description = description
         self.tax = tax
         self.quantity = quant
+        self.amountModifiers = amountMod
+        self.amountItem = (price * Double(quant)) + amountMod
         
-        self.amountItem = price * Double(quant)
-        self.amountTax  = (tax * self.amountItem) / 100
         
         self.itemModifiers = modifiers
-        self.amountModifiers = amountMod
+        
         self.discount = discount
+    }
+    
+    func calculateTax(discount: Double! = 0.0) {
+        let itemRealValue = amountItem - (amountItem * discount)
+        self.amountTax  = (self.tax * itemRealValue) / 100
     }
     
 }
