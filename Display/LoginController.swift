@@ -45,7 +45,7 @@ class LoginController: UIViewController {
         button.layer.borderWidth = 1
         button.layer.cornerRadius = 20
         button.layer.backgroundColor = UIColor.gray.cgColor
-        
+        txtPassword.isHidden = true
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -66,7 +66,7 @@ class LoginController: UIViewController {
         UserDefaults.standard.removeObject(forKey: "pathLogo")
         
         let userName: String = (txtUsername.text?.trimmingCharacters(in: CharacterSet.whitespaces))!
-        let password: String = (txtPassword.text?.trimmingCharacters(in: CharacterSet.whitespaces))!
+//        let password: String = (txtPassword.text?.trimmingCharacters(in: CharacterSet.whitespaces))!
         var alert: UIAlertController = UIAlertController(title: "", message: "", preferredStyle: .actionSheet)
         alert.title = "Login into App"
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
@@ -77,24 +77,25 @@ class LoginController: UIViewController {
             alert.popoverPresentationController?.sourceView = txtUsername
             alert.popoverPresentationController?.sourceRect = txtUsername.bounds
             self.present(alert, animated: true, completion: nil)
-        }else if password == ""{
-            alert.message = "Enter the password"
-            alert.popoverPresentationController?.sourceView = txtPassword
-            alert.popoverPresentationController?.sourceRect = txtPassword.bounds
-            
-            self.present(alert, animated: true, completion: nil)
+//        }else if password == ""{
+//            alert.message = "Enter the password"
+//            alert.popoverPresentationController?.sourceView = txtPassword
+//            alert.popoverPresentationController?.sourceRect = txtPassword.bounds
+//
+//            self.present(alert, animated: true, completion: nil)
         }else{
             UIApplication.shared.isNetworkActivityIndicatorVisible = true
             activityIndicator.startAnimating()
             
-            let url = "https://api.invupos.com/invuApiPos/index.php?r=site/ApiLogin"
-            let passwordSHA1 = self.passwordToSha1(password: password)
-            let parameters : [String: String] = [
-                "username": userName,
-                "password": passwordSHA1
-            ]
+//            let url = "https://api.invupos.com/invuApiPos/index.php?r=site/ApiLogin"
+//            let passwordSHA1 = self.passwordToSha1(password: password)
+//            let parameters : [String: String] = [
+//                "username": userName,
+//                "password": passwordSHA1
+//            ]
             
             LoginController.client = TCPClient(address: userName, port: 6000)
+            
             switch LoginController.client.connect(timeout: 1){
                 case .success:
                     self.performSegue(withIdentifier: "segue1", sender: self)
@@ -152,14 +153,18 @@ class LoginController: UIViewController {
     
     
     func keyboardShow(sender : Notification){
-        let keyboardSize = sender.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? CGRect
+//        let keyboardSize = sender.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? CGRect
         if !showingKey{
             showingKey = true
-            self.view.frame.origin.y -= ( (button.frame.origin.y + button.frame.height) - (self.view.frame.height - keyboardSize!.height))
+            //self.view.frame.origin.y -= ( (button.frame.origin.y + button.frame.height) - (self.view.frame.height - keyboardSize!.height))
 
         }
         
     }
+    
+    
+    
+    
     func keyboardHide(sender : Notification){
          self.view.frame.origin.y = 0
         showingKey = false

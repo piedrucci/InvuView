@@ -77,23 +77,33 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
 //    metodo para mostrar el menu de seleccion de la caja que se desea obtener la ultima orden
     @IBAction func btnMenu(_ sender: UIButton) {
-        self.timer?.invalidate()
         
-        UserDefaults.standard.removeObject(forKey: "APIKEY")
-        UserDefaults.standard.removeObject(forKey: "cashRegisterID")
-        UserDefaults.standard.removeObject(forKey: "pathLogo")
-        UserDefaults.standard.removeObject(forKey: "shopName")
-        UserDefaults.standard.removeObject(forKey: "pathLogo")
+        let alert  = UIAlertController(title: "Desea cerrar session?", message: nil, preferredStyle: .alert)
         
+        alert.addAction(UIAlertAction(title: "Si", style: .default, handler: { (alert) in
+            self.timer?.invalidate()
+            
+            UserDefaults.standard.removeObject(forKey: "APIKEY")
+            UserDefaults.standard.removeObject(forKey: "cashRegisterID")
+            UserDefaults.standard.removeObject(forKey: "pathLogo")
+            UserDefaults.standard.removeObject(forKey: "shopName")
+            UserDefaults.standard.removeObject(forKey: "pathLogo")
+            
+            
+            let window = (UIApplication.shared.delegate as! AppDelegate).window
+            if (window?.rootViewController as? LoginController) != nil{
+                self.dismiss(animated: true, completion: nil)
+            }else{
+                let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
+                let controller = storyboard.instantiateViewController(withIdentifier: "logincontroller")
+                window?.rootViewController = controller
+            }
+        }))
         
-        let window = (UIApplication.shared.delegate as! AppDelegate).window
-        if (window?.rootViewController as? LoginController) != nil{
-            self.dismiss(animated: true, completion: nil)
-        }else{
-            let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
-            let controller = storyboard.instantiateViewController(withIdentifier: "logincontroller")
-            window?.rootViewController = controller
-        }
+        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+        
+        self.present(alert, animated: true, completion: nil)
+        
         
     }
     
@@ -115,7 +125,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     func listener(sender : Any!){
-        while true {
+        while LoginController.client != nil {
             if let data = LoginController.client.read(1024*10000){
                 if let response = String(bytes: data, encoding: .utf8) {
                     print(JSON(response))
@@ -127,6 +137,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             }
         }
     }
+    
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -158,7 +169,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             let item: Item = data[indexPath.row]
             customCell.cellCant.text = String(item.quantity)
             customCell.cellDescripcion.text = item.description
-            customCell.cellAmount.text = "$"+String(format: "%.02f", (item.amountItem + item.amountModifiers) )
+            customCell.cellAmount.text = "$"+String(format: "%.02f", (item.amountItem ) )
             
 //            var disStack: UIStackView = UIStackView
 //            let discountDescription: UILabel
@@ -196,6 +207,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             customCell.cellCant.text = "Cant"
             customCell.cellDescripcion.text = "Description"
             customCell.cellAmount.text = "Amount"
+            customCell.lblModifier.isHidden = true
             let color: UIColor = UIColor(red: 230 / 255, green: 230 / 255, blue: 230 / 255, alpha: 0.9)
             customCell.backgroundColor = color
             return customCell
@@ -276,6 +288,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         self.timer?.invalidate()
+        LoginController.client.close()
+        LoginController.client = nil
     }
     
     
@@ -428,7 +442,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         let discountPercent = (invoice.discount.porcentaje ? invoice.discount.value  : (invoice.discount.value * 100) / subtotal) / 100
                        invoice.items.forEach{
                             
-                            $0.calculateTax(discount: discountPercent)
+                            $0.calculateTax(discount: 0.0)
                         }
                         self.lblSubtotal.text = "$"+String(format: "%.02f", subtotal)
                         
@@ -436,6 +450,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         var taxes = invoice.items.reduce(0.0, { acum, currentItem in
                             acum + currentItem.amountTax
                         })
+                        taxes -= (taxes * discountPercent)
                         self.lblTax.text = "$"+String(format: "%.02f", taxes)
                         
                         
@@ -453,8 +468,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                                 let auxAcumTotal = acumTotal
                                 acumTotal -= totalDiscount
                                 
-                                taxes = (acumTotal * taxes) / auxAcumTotal
-                                self.lblTax.text = "$"+String(format: "%.02f", taxes)
+                               
                                 
                             }else{
                                 totalDiscount = invoice.discount.value
@@ -502,6 +516,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                         
                         
                         self.tableView.reloadData()
+                        
+                        let y =  self.tableView.contentSize.height - self.tableView.bounds.height
+                        if y >= 0{
+                            self.tableView.setContentOffset( CGPoint(x:0,y : y), animated: true)
+                        }
+                        
                         self.PaymentTableView.reloadData()
                         
                     }
